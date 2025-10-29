@@ -1,7 +1,6 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 from functools import lru_cache
-from typing import Any, Literal, Pattern
+from re import Pattern
+from typing import Any, Literal
 
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -136,6 +135,7 @@ class Settings(BaseSettings):
         ('POST', f'{FASTAPI_API_V1_PATH}/auth/login'),
         ('POST', f'{FASTAPI_API_V1_PATH}/auth/logout'),
         ('GET', f'{FASTAPI_API_V1_PATH}/auth/captcha'),
+        ('POST', f'{FASTAPI_API_V1_PATH}/auth/refresh'),
     }
 
     # IP 定位配置
@@ -150,7 +150,7 @@ class Settings(BaseSettings):
 
     # 日志
     LOG_FORMAT: str = (
-        '<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</> | <lvl>{level: <8}</> | <cyan>{correlation_id}</> | <lvl>{message}</>'
+        '<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</> | <lvl>{level: <8}</> | <cyan>{request_id}</> | <lvl>{message}</>'
     )
 
     # 日志（控制台）
@@ -173,6 +173,7 @@ class Settings(BaseSettings):
         '/openapi',
         f'{FASTAPI_API_V1_PATH}/auth/login/swagger',
         f'{FASTAPI_API_V1_PATH}/oauth2/github/callback',
+        f'{FASTAPI_API_V1_PATH}/oauth2/google/callback',
         f'{FASTAPI_API_V1_PATH}/oauth2/linux-do/callback',
     ]
     OPERA_LOG_ENCRYPT_TYPE: int = 1  # 0: AES (性能损耗); 1: md5; 2: ItsDangerous; 3: 不加密, others: 替换为 ******
@@ -228,6 +229,7 @@ class Settings(BaseSettings):
     OAUTH2_LINUX_DO_CLIENT_SECRET: str
 
     # 基础配置
+    OAUTH2_BACKEND_BASE_URL: str = 'http://127.0.0.1:8000'
     OAUTH2_FRONTEND_REDIRECT_URI: str = 'http://localhost:5173/oauth2/callback'
 
     ##################################################

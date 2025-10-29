@@ -1,6 +1,4 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-from typing import Sequence
+from collections.abc import Sequence
 
 from fastapi import Request
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,7 +20,7 @@ class CRUDDept(CRUDPlus[Dept]):
         :param dept_id: 部门 ID
         :return:
         """
-        return await self.select_model_by_column(db, id=dept_id, del_flag=0)
+        return await self.select_model_by_column(db, id=dept_id, del_flag=False)
 
     async def get_by_name(self, db: AsyncSession, name: str) -> Dept | None:
         """
@@ -32,7 +30,7 @@ class CRUDDept(CRUDPlus[Dept]):
         :param name: 部门名称
         :return:
         """
-        return await self.select_model_by_column(db, name=name, del_flag=0)
+        return await self.select_model_by_column(db, name=name, del_flag=False)
 
     async def get_all(
         self,
@@ -54,7 +52,7 @@ class CRUDDept(CRUDPlus[Dept]):
         :param status: 部门状态
         :return:
         """
-        filters = {'del_flag': 0}
+        filters = {'del_flag': False}
 
         if name is not None:
             filters['name__like'] = f'%{name}%'
