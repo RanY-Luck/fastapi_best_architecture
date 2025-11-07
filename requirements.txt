@@ -350,3 +350,4 @@ zope-event==6.0
     # via gevent
 zope-interface==8.0.1
     # via gevent
+aiomysql==0.3.2

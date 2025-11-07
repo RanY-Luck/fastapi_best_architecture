@@ -94,7 +94,7 @@ async def cleanup_old_reports(
         return response_base.fail(data=f"清理报告失败: {str(e)}")
 
 
-@router.get("/", response_model=ResponseModel, summary="获取测试报告列表")
+@router.get("", response_model=ResponseModel, summary="获取测试报告列表")
 async def get_test_reports(
         test_case_id: Optional[int] = Query(None, description="测试用例ID"),
         start_date: Optional[str] = Query(None, description="开始日期 (YYYY-MM-DD)"),
