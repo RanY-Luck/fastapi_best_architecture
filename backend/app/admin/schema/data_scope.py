@@ -22,6 +22,13 @@ class UpdateDataScopeParam(DataScopeBase):
     """更新数据范围参数"""
 
 
+class CreateDataScopeRuleParam(SchemaBase):
+    """创建数据范围规则参数"""
+
+    data_scope_id: int = Field(description='数据范围 ID')
+    data_rule_id: int = Field(description='数据规则 ID')
+
+
 class UpdateDataScopeRuleParam(SchemaBase):
     """更新数据范围规则参数"""
 
@@ -47,4 +54,4 @@ class GetDataScopeDetail(DataScopeBase):
 class GetDataScopeWithRelationDetail(GetDataScopeDetail):
     """数据范围关联详情"""
 
-    rules: list[GetDataRuleDetail] = Field([], description='数据规则列表')
+    rules: list[GetDataRuleDetail | None] = Field([], description='数据规则列表')

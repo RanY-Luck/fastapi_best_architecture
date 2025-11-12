@@ -23,6 +23,7 @@ from backend.common.response.response_code import CustomErrorCode
 from backend.common.security.jwt import get_token, jwt_decode, password_verify
 from backend.core.conf import settings
 from backend.database.redis import redis_client
+from backend.utils.serializers import select_join_serialize
 
 
 class UserService:
@@ -38,7 +39,7 @@ class UserService:
         :param username: 用户名
         :return:
         """
-        user = await user_dao.get_with_relation(db, user_id=pk, username=username)
+        user = await user_dao.get_join(db, user_id=pk, username=username)
         if not user:
             raise errors.NotFoundError(msg='用户不存在')
         return user
@@ -52,7 +53,7 @@ class UserService:
         :param pk: 用户 ID
         :return:
         """
-        user = await user_dao.get_with_relation(db, user_id=pk)
+        user = await user_dao.get_join(db, user_id=pk)
         if not user:
             raise errors.NotFoundError(msg='用户不存在')
         return user.roles
@@ -70,7 +71,10 @@ class UserService:
         :return:
         """
         user_select = await user_dao.get_select(dept=dept, username=username, phone=phone, status=status)
-        return await paging_data(db, user_select)
+        data = await paging_data(db, user_select)
+        if data['items']:
+            data['items'] = select_join_serialize(data['items'], relationships=['User-m2o-Dept', 'User-m2m-Role'])
+        return data
 
     @staticmethod
     async def create(*, db: AsyncSession, obj: AddUserParam) -> None:
@@ -103,11 +107,13 @@ class UserService:
         :param obj: 用户更新参数
         :return:
         """
-        user = await user_dao.get_with_relation(db, user_id=pk)
+        user = await user_dao.get_join(db, user_id=pk)
         if not user:
             raise errors.NotFoundError(msg='用户不存在')
         if obj.username != user.username and await user_dao.get_by_username(db, obj.username):
             raise errors.ConflictError(msg='用户名已注册')
+        if obj.dept_id and obj.dept_id != user.dept_id and not await dept_dao.get(db, dept_id=obj.dept_id):
+            raise errors.NotFoundError(msg='部门不存在')
         for role_id in obj.roles:
             if not await role_dao.get(db, role_id):
                 raise errors.NotFoundError(msg='角色不存在')
@@ -200,93 +206,74 @@ class UserService:
         return count
 
     @staticmethod
-    async def update_nickname(*, db: AsyncSession, request: Request, nickname: str) -> int:
+    async def update_nickname(*, db: AsyncSession, user_id: int, nickname: str) -> int:
         """
         更新当前用户昵称
 
         :param db: 数据库会话
-        :param request: FastAPI 请求对象
+        :param user_id: 用户 ID
         :param nickname: 用户昵称
         :return:
         """
-        token = get_token(request)
-        token_payload = jwt_decode(token)
-        user = await user_dao.get(db, token_payload.id)
-        if not user:
-            raise errors.NotFoundError(msg='用户不存在')
-        count = await user_dao.update_nickname(db, token_payload.id, nickname)
-        await redis_client.delete(f'{settings.JWT_USER_REDIS_PREFIX}:{user.id}')
+        count = await user_dao.update_nickname(db, user_id, nickname)
+        await redis_client.delete(f'{settings.JWT_USER_REDIS_PREFIX}:{user_id}')
         return count
 
     @staticmethod
-    async def update_avatar(*, db: AsyncSession, request: Request, avatar: str) -> int:
+    async def update_avatar(*, db: AsyncSession, user_id: int, avatar: str) -> int:
         """
         更新当前用户头像
 
         :param db: 数据库会话
-        :param request: FastAPI 请求对象
+        :param user_id: 用户 ID
         :param avatar: 头像地址
         :return:
         """
-        token = get_token(request)
-        token_payload = jwt_decode(token)
-        user = await user_dao.get(db, token_payload.id)
-        if not user:
-            raise errors.NotFoundError(msg='用户不存在')
-        count = await user_dao.update_avatar(db, token_payload.id, avatar)
-        await redis_client.delete(f'{settings.JWT_USER_REDIS_PREFIX}:{user.id}')
+        count = await user_dao.update_avatar(db, user_id, avatar)
+        await redis_client.delete(f'{settings.JWT_USER_REDIS_PREFIX}:{user_id}')
         return count
 
     @staticmethod
-    async def update_email(*, db: AsyncSession, request: Request, captcha: str, email: str) -> int:
+    async def update_email(*, db: AsyncSession, user_id: int, captcha: str, email: str) -> int:
         """
         更新当前用户邮箱
 
         :param db: 数据库会话
-        :param request: FastAPI 请求对象
+        :param user_id: 用户 ID
         :param captcha: 邮箱验证码
         :param email: 邮箱
         :return:
         """
-        token = get_token(request)
-        token_payload = jwt_decode(token)
-        user = await user_dao.get(db, token_payload.id)
-        if not user:
-            raise errors.NotFoundError(msg='用户不存在')
         captcha_code = await redis_client.get(f'{settings.EMAIL_CAPTCHA_REDIS_PREFIX}:{ctx.ip}')
         if not captcha_code:
             raise errors.RequestError(msg='验证码已失效，请重新获取')
         if captcha != captcha_code:
             raise errors.CustomError(error=CustomErrorCode.CAPTCHA_ERROR)
         await redis_client.delete(f'{settings.EMAIL_CAPTCHA_REDIS_PREFIX}:{ctx.ip}')
-        count = await user_dao.update_email(db, token_payload.id, email)
-        await redis_client.delete(f'{settings.JWT_USER_REDIS_PREFIX}:{user.id}')
+        count = await user_dao.update_email(db, user_id, email)
+        await redis_client.delete(f'{settings.JWT_USER_REDIS_PREFIX}:{user_id}')
         return count
 
     @staticmethod
-    async def update_password(*, db: AsyncSession, request: Request, obj: ResetPasswordParam) -> int:
+    async def update_password(*, db: AsyncSession, user_id: int, hash_password: str, obj: ResetPasswordParam) -> int:
         """
         更新当前用户密码
 
         :param db: 数据库会话
-        :param request: FastAPI 请求对象
+        :param user_id: 用户 ID
+        :param hash_password: 哈希密码
         :param obj: 密码重置参数
         :return:
         """
-        token = get_token(request)
-        token_payload = jwt_decode(token)
-        user = await user_dao.get(db, token_payload.id)
-        if not user:
-            raise errors.NotFoundError(msg='用户不存在')
-        if not password_verify(obj.old_password, user.password):
+        if not password_verify(obj.old_password, hash_password):
             raise errors.RequestError(msg='原密码错误')
         if obj.new_password != obj.confirm_password:
             raise errors.RequestError(msg='密码输入不一致')
-        count = await user_dao.reset_password(db, user.id, obj.new_password)
+        count = await user_dao.reset_password(db, user_id, obj.new_password)
         key_prefix = [
-            f'{settings.TOKEN_REDIS_PREFIX}:{user.id}',
-            f'{settings.TOKEN_REFRESH_REDIS_PREFIX}:{user.id}',
-            f'{settings.JWT_USER_REDIS_PREFIX}:{user.id}',
+            f'{settings.TOKEN_REDIS_PREFIX}:{user_id}',
+            f'{settings.TOKEN_REFRESH_REDIS_PREFIX}:{user_id}',
+            f'{settings.JWT_USER_REDIS_PREFIX}:{user_id}',
         ]
         for prefix in key_prefix:
             await redis_client.delete_prefix(prefix)
