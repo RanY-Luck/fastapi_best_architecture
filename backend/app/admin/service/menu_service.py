@@ -6,9 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.app.admin.crud.crud_menu import menu_dao
 from backend.app.admin.model import Menu
 from backend.app.admin.schema.menu import CreateMenuParam, UpdateMenuParam
+from backend.app.admin.utils.cache import user_cache_manager
 from backend.common.exception import errors
-from backend.core.conf import settings
-from backend.database.redis import redis_client
 from backend.utils.build_tree import get_tree_data, get_vben5_tree_data
 
 
@@ -54,7 +53,7 @@ class MenuService:
         :param request: FastAPI 请求对象
         :return:
         """
-
+        menu_data = None
         if request.user.is_superuser:
             menu_data = await menu_dao.get_sidebar(db, None)
         else:
@@ -64,8 +63,11 @@ class MenuService:
                 for role in roles:
                     menu_ids.update(menu.id for menu in role.menus)
                 menu_data = await menu_dao.get_sidebar(db, list(menu_ids))
-        menu_tree = get_vben5_tree_data(menu_data)
-        return menu_tree
+
+        if menu_data:
+            return get_vben5_tree_data(menu_data)
+
+        return []
 
     @staticmethod
     async def create(*, db: AsyncSession, obj: CreateMenuParam) -> None:
@@ -109,9 +111,7 @@ class MenuService:
         if obj.parent_id == menu.id:
             raise errors.ForbiddenError(msg='禁止关联自身为父级')
         count = await menu_dao.update(db, pk, obj)
-        for role in await menu.awaitable_attrs.roles:
-            for user in await role.awaitable_attrs.users:
-                await redis_client.delete(f'{settings.JWT_USER_REDIS_PREFIX}:{user.id}')
+        await user_cache_manager.clear_by_menu_id(db, [pk])
         return count
 
     @staticmethod
@@ -127,12 +127,9 @@ class MenuService:
         children = await menu_dao.get_children(db, pk)
         if children:
             raise errors.ConflictError(msg='菜单下存在子菜单，无法删除')
-        menu = await menu_dao.get(db, pk)
         count = await menu_dao.delete(db, pk)
-        if menu:
-            for role in await menu.awaitable_attrs.roles:
-                for user in await role.awaitable_attrs.users:
-                    await redis_client.delete(f'{settings.JWT_USER_REDIS_PREFIX}:{user.id}')
+        if count:
+            await user_cache_manager.clear_by_menu_id(db, [pk])
         return count
 
 
