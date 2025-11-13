@@ -65,15 +65,16 @@ async def get_project(project_id: int = Path(..., description="项目ID")) -> Re
 @router.get("", response_model=ResponseModel, summary="获取API项目列表")
 async def get_projects(
         skip: int = Query(0, description="跳过数量"),
-        limit: int = Query(100, description="限制数量")
+        limit: int = Query(20, description="限制数量"),
+        name: str = Query(None, description="项目名称"),
+        status: int = Query(None, description="状态")
 ) -> ResponseModel | ResponseSchemaModel:
     """
     获取API项目列表
     """
     try:
-        projects = await ProjectService.get_projects(skip=skip, limit=limit)
-        total = await ProjectService.get_project_count()
-
+        projects = await ProjectService.get_projects(skip=skip, limit=limit, name=name, status=status)
+        total = await ProjectService.get_project_count(name=name, status=status)  # 修改这里：添加 name 和 status 参数
         project_list = []
         for project in projects:
             project_response = ProjectResponse(
@@ -88,7 +89,6 @@ async def get_projects(
                 updated_time=project.updated_time.isoformat() if project.updated_time else ""
             )
             project_list.append(project_response.model_dump())
-
         return response_base.success(
             data={
                 "items": project_list,

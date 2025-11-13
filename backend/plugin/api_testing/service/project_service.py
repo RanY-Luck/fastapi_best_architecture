@@ -3,6 +3,7 @@
 """
 API项目服务层
 """
+from sqlalchemy import func
 from typing import List, Optional
 from sqlalchemy import select, update, delete
 from backend.database.db import async_db_session
@@ -39,12 +40,28 @@ class ProjectService:
             result = await db.execute(select(ApiProject).where(ApiProject.id == project_id))
             return result.scalar_one_or_none()
 
-    @staticmethod
-    async def get_projects(skip: int = 0, limit: int = 100) -> List[ApiProject]:
+    async def get_projects(skip: int = 0, limit: int = 20, name: str = None, status: int = None) -> List[ApiProject]:
         """获取API项目列表"""
         async with async_db_session() as db:
-            result = await db.execute(select(ApiProject).offset(skip).limit(limit))
+            query = select(ApiProject)
+            if name is not None:
+                query = query.where(ApiProject.name.ilike(f"%{name}%"))
+            if status is not None:
+                query = query.where(ApiProject.status == status)
+            query = query.offset(skip).limit(limit)
+            result = await db.execute(query)
             return result.scalars().all()
+
+    async def get_project_count(name: str = None, status: int = None) -> int:
+        """获取项目总数"""
+        async with async_db_session() as db:
+            query = select(func.count(ApiProject.id))
+            if name is not None:  # 修改：使用 is not None
+                query = query.where(ApiProject.name.ilike(f"%{name}%"))
+            if status is not None:  # 修改：使用 is not None
+                query = query.where(ApiProject.status == status)
+            result = await db.execute(query)
+            return result.scalar()
 
     @staticmethod
     async def update_project(project_id: int, project_data: ProjectUpdateRequest) -> Optional[ApiProject]:
@@ -68,8 +85,8 @@ class ProjectService:
             if update_data:
                 await db.execute(
                     update(ApiProject)
-                        .where(ApiProject.id == project_id)
-                        .values(**update_data)
+                    .where(ApiProject.id == project_id)
+                    .values(**update_data)
                 )
                 await db.commit()
 
@@ -85,9 +102,9 @@ class ProjectService:
             await db.commit()
             return result.rowcount > 0
 
-    @staticmethod
-    async def get_project_count() -> int:
-        """获取项目总数"""
-        async with async_db_session() as db:
-            result = await db.execute(select(ApiProject))
-            return len(result.scalars().all())
+    # @staticmethod
+    # async def get_project_count() -> int:
+    #     """获取项目总数"""
+    #     async with async_db_session() as db:
+    #         result = await db.execute(select(ApiProject))
+    #         return len(result.scalars().all())
