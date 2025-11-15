@@ -3,6 +3,7 @@
 """
 API项目服务层
 """
+from fastapi import Query
 from sqlalchemy import func
 from typing import List, Optional
 from sqlalchemy import select, update, delete
@@ -40,11 +41,16 @@ class ProjectService:
             result = await db.execute(select(ApiProject).where(ApiProject.id == project_id))
             return result.scalar_one_or_none()
 
-    async def get_projects(skip: int = 0, limit: int = 20, name: str = None, status: int = None) -> List[ApiProject]:
+    async def get_projects(
+            skip: int = 0,
+            limit: int = 20,
+            name: str = None,
+            status: Optional[int] = Query(None, description="项目状态，不传或传空表示查询所有状态")
+    ) -> List[ApiProject]:
         """获取API项目列表"""
         async with async_db_session() as db:
             query = select(ApiProject)
-            if name is not None:
+            if name is not None and name.strip():
                 query = query.where(ApiProject.name.ilike(f"%{name}%"))
             if status is not None:
                 query = query.where(ApiProject.status == status)

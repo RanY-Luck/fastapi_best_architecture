@@ -4,7 +4,9 @@
 API测试用例服务层
 """
 from typing import List, Optional
-from sqlalchemy import select, update, delete
+
+from fastapi import Query
+from sqlalchemy import select, update, delete, func
 from sqlalchemy.orm import selectinload
 from backend.database.db import async_db_session
 from backend.plugin.api_testing.model.models import ApiTestCase
@@ -43,17 +45,36 @@ class TestCaseService:
             return result.scalar_one_or_none()
 
     @staticmethod
-    async def get_test_cases(project_id: Optional[int] = None, skip: int = 0, limit: int = 100) -> List[ApiTestCase]:
+    async def get_test_cases(
+            skip: int = 0,
+            limit: int = 20,
+            name: Optional[str] = None,
+            project_id: Optional[int] = None,
+            status: Optional[int] = Query(None, description="测试用例状态，不传或传空表示查询所有状态"),
+    ) -> List[ApiTestCase]:
         """获取测试用例列表"""
         async with async_db_session() as db:
             query = select(ApiTestCase).options(selectinload(ApiTestCase.steps))
-
+            if name is not None and name.strip():
+                query = query.where(ApiTestCase.name.ilike(f"%{name}%"))
             if project_id:
                 query = query.where(ApiTestCase.project_id == project_id)
-
+            if status is not None:
+                query = query.where(ApiTestCase.status == status)
             query = query.offset(skip).limit(limit)
             result = await db.execute(query)
             return result.scalars().all()
+
+    async def get_test_case_count(name: str = None, status: int = None) -> int:
+        """获取项目总数"""
+        async with async_db_session() as db:
+            query = select(func.count(ApiTestCase.id))
+            if name is not None:  # 修改：使用 is not None
+                query = query.where(ApiTestCase.name.ilike(f"%{name}%"))
+            if status is not None:  # 修改：使用 is not None
+                query = query.where(ApiTestCase.status == status)
+            result = await db.execute(query)
+            return result.scalar()
 
     @staticmethod
     async def update_test_case(case_id: int, case_data: TestCaseUpdateRequest) -> Optional[ApiTestCase]:
@@ -96,12 +117,12 @@ class TestCaseService:
             await db.commit()
             return result.rowcount > 0
 
-    @staticmethod
-    async def get_test_case_count(project_id: Optional[int] = None) -> int:
-        """获取测试用例总数"""
-        async with async_db_session() as db:
-            query = select(ApiTestCase)
-            if project_id:
-                query = query.where(ApiTestCase.project_id == project_id)
-            result = await db.execute(query)
-            return len(result.scalars().all())
+    # @staticmethod
+    # async def get_test_case_count(project_id: Optional[int] = None) -> int:
+    #     """获取测试用例总数"""
+    #     async with async_db_session() as db:
+    #         query = select(ApiTestCase)
+    #         if project_id:
+    #             query = query.where(ApiTestCase.project_id == project_id)
+    #         result = await db.execute(query)
+    #         return len(result.scalars().all())

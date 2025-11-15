@@ -66,6 +66,8 @@ async def get_test_case(case_id: int = Path(..., description="用例ID")) -> Res
 @router.get("", response_model=ResponseModel, summary="获取测试用例列表")
 async def get_test_cases(
     project_id: Optional[int] = Query(None, description="项目ID"),
+    status: Optional[int] = Query(None, description="状态"),
+    name: Optional[str] = Query(None, description="用例名称"),
     skip: int = Query(0, description="跳过数量"),
     limit: int = Query(100, description="限制数量")
 ) -> ResponseModel | ResponseSchemaModel:
@@ -73,8 +75,8 @@ async def get_test_cases(
     获取测试用例列表
     """
     try:
-        test_cases = await TestCaseService.get_test_cases(project_id=project_id, skip=skip, limit=limit)
-        total = await TestCaseService.get_test_case_count(project_id=project_id)
+        test_cases = await TestCaseService.get_test_cases(project_id=project_id,name=name, status=status, skip=skip, limit=limit)
+        total = await TestCaseService.get_test_case_count(name=name, status=status)
         
         case_list = []
         for test_case in test_cases:
