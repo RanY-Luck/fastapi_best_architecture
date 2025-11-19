@@ -76,7 +76,6 @@ class ApiTestReport(Base):
     id: Mapped[id_key] = mapped_column(init=False)
     test_case_id: Mapped[int] = mapped_column(ForeignKey('api_test_case.id'), comment='所属用例ID')
     name: Mapped[str] = mapped_column(String(64), comment='报告名称')
-    success: Mapped[bool] = mapped_column(Boolean, comment='是否成功')
     total_steps: Mapped[int] = mapped_column(comment='总步骤数')
     success_steps: Mapped[int] = mapped_column(comment='成功步骤数')
     fail_steps: Mapped[int] = mapped_column(comment='失败步骤数')
@@ -84,6 +83,7 @@ class ApiTestReport(Base):
     end_time: Mapped[datetime] = mapped_column(DateTime, comment='结束时间')
     duration: Mapped[int] = mapped_column(comment='执行时长(毫秒)')
     details: Mapped[dict] = mapped_column(JSON, comment='报告详情')
+    success: Mapped[int] = mapped_column(default=StatusType.enable.value,comment='是否成功 0失败 1成功')
 
     # 关联关系
     test_case: Mapped["ApiTestCase"] = relationship("ApiTestCase", back_populates="reports", init=False)

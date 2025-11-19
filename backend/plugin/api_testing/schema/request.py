@@ -218,7 +218,7 @@ class TestReportResponse(BaseModel):
     id: int
     test_case_id: int
     name: str
-    success: bool
+    success: int
     total_steps: int
     success_steps: int
     fail_steps: int

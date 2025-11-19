@@ -9,6 +9,7 @@ from sqlalchemy import select, delete, func
 from backend.database.db import async_db_session
 from backend.plugin.api_testing.model.models import ApiTestReport, ApiTestCase, ApiProject
 from backend.plugin.api_testing.schema.request import TestReportCreateRequest
+from backend.plugin.api_testing.utils.report_generator import TestReport
 
 
 class TestReportService:
@@ -67,10 +68,10 @@ class TestReportService:
                 query = query.where(ApiTestReport.test_case_id == test_case_id)
 
             if start_date:
-                query = query.where(ApiTestReport.created_time >= start_date)
+                query = query.filter(ApiTestReport.start_time >= start_date)
 
             if end_date:
-                query = query.where(ApiTestReport.created_time <= end_date)
+                query = query.filter(ApiTestReport.start_time <= end_date)  # ✅ 修复这里
 
             if success_only is not None:
                 query = query.where(ApiTestReport.success == success_only)

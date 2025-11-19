@@ -111,9 +111,12 @@ async def get_test_reports(
         start_datetime = None
         end_datetime = None
         if start_date:
-            start_datetime = datetime.fromisoformat(start_date)
+            # 开始日期: 当天的 00:00:00
+            start_datetime = datetime.fromisoformat(start_date).replace(hour=0, minute=0, second=0, microsecond=0)
+
         if end_date:
-            end_datetime = datetime.fromisoformat(end_date)
+            # 结束日期: 当天的 23:59:59
+            end_datetime = datetime.fromisoformat(end_date).replace(hour=23, minute=59, second=59, microsecond=999999)
 
         test_reports = await TestReportService.get_test_reports(
             test_case_id=test_case_id,
