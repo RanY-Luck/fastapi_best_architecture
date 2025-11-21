@@ -3,8 +3,8 @@
 """
 API测试步骤管理接口
 """
-from typing import List, Optional
-from fastapi import APIRouter, Path, Query, HTTPException
+from typing import Optional
+from fastapi import APIRouter, Path, Query
 from backend.common.response.response_schema import response_base, ResponseModel, ResponseSchemaModel
 from backend.plugin.api_testing.service.test_step_service import TestStepService
 from backend.plugin.api_testing.schema.request import (
@@ -61,7 +61,7 @@ async def get_test_step(step_id: int = Path(..., description="步骤ID")) -> Res
         test_step = await TestStepService.get_test_step_by_id(step_id)
         if not test_step:
             return response_base.fail(data="测试步骤不存在")
-        
+
         step_response = TestStepResponse(
             id=test_step.id,
             name=test_step.name,
@@ -91,17 +91,27 @@ async def get_test_step(step_id: int = Path(..., description="步骤ID")) -> Res
 
 @router.get("", response_model=ResponseModel, summary="获取测试步骤列表")
 async def get_test_steps(
-    test_case_id: Optional[int] = Query(None, description="测试用例ID"),
-    skip: int = Query(0, description="跳过数量"),
-    limit: int = Query(100, description="限制数量")
+        test_case_id: Optional[int] = Query(None, description="测试用例ID"),
+        name: Optional[str] = Query(None, description="步骤名称"),
+        method: Optional[str] = Query(None, description="HTTP方法"),
+        status: Optional[int] = Query(None, description="状态"),
+        skip: int = Query(0, description="跳过数量"),
+        limit: int = Query(20, description="限制数量")
 ) -> ResponseModel | ResponseSchemaModel:
     """
     获取测试步骤列表
     """
     try:
-        test_steps = await TestStepService.get_test_steps(test_case_id=test_case_id, skip=skip, limit=limit)
+        test_steps = await TestStepService.get_test_steps(
+            test_case_id=test_case_id,
+            name=name,
+            method=method,
+            status=status,
+            skip=skip,
+            limit=limit
+        )
         total = await TestStepService.get_test_step_count(test_case_id=test_case_id)
-        
+
         step_list = []
         for test_step in test_steps:
             step_response = TestStepResponse(
@@ -127,22 +137,24 @@ async def get_test_steps(
                 updated_time=test_step.updated_time.isoformat() if test_step.updated_time else ""
             )
             step_list.append(step_response.model_dump())
-        
-        return response_base.success(data={
-            "items": step_list,
-            "total": total,
-            "skip": skip,
-            "limit": limit,
-            "test_case_id": test_case_id
-        })
+
+        return response_base.success(
+            data={
+                "items": step_list,
+                "total": total,
+                "skip": skip,
+                "limit": limit,
+                "test_case_id": test_case_id
+            }
+        )
     except Exception as e:
         return response_base.fail(data=f"获取测试步骤列表失败: {str(e)}")
 
 
 @router.put("/{step_id}", response_model=ResponseModel, summary="更新测试步骤")
 async def update_test_step(
-    step_data: TestStepUpdateRequest,
-    step_id: int = Path(..., description="步骤ID")
+        step_data: TestStepUpdateRequest,
+        step_id: int = Path(..., description="步骤ID")
 ) -> ResponseModel | ResponseSchemaModel:
     """
     更新测试步骤
@@ -151,13 +163,13 @@ async def update_test_step(
         test_step = await TestStepService.update_test_step(step_id, step_data)
         if not test_step:
             return response_base.fail(data="测试步骤不存在")
-        
+
         step_response = TestStepResponse(
             id=test_step.id,
             name=test_step.name,
             test_case_id=test_step.test_case_id,
             url=test_step.url,
-            method=test_step.method,
+            method=str(test_step.method),
             headers=test_step.headers,
             params=test_step.params,
             body=test_step.body,
@@ -188,7 +200,7 @@ async def delete_test_step(step_id: int = Path(..., description="步骤ID")) -> 
         success = await TestStepService.delete_test_step(step_id)
         if not success:
             return response_base.fail(data="测试步骤不存在或删除失败")
-        
+
         return response_base.success(data="测试步骤删除成功")
     except Exception as e:
         return response_base.fail(data=f"删除测试步骤失败: {str(e)}")
@@ -196,8 +208,8 @@ async def delete_test_step(step_id: int = Path(..., description="步骤ID")) -> 
 
 @router.post("/reorder", response_model=ResponseModel, summary="重新排序测试步骤")
 async def reorder_test_steps(
-    reorder_data: StepReorderRequest,
-    test_case_id: int = Query(..., description="测试用例ID")
+        reorder_data: StepReorderRequest,
+        test_case_id: int = Query(..., description="测试用例ID")
 ) -> ResponseModel | ResponseSchemaModel:
     """
     重新排序测试步骤
@@ -206,7 +218,7 @@ async def reorder_test_steps(
         success = await TestStepService.reorder_steps(test_case_id, reorder_data.step_orders)
         if not success:
             return response_base.fail(data="步骤排序失败")
-        
+
         return response_base.success(data="步骤排序成功")
     except Exception as e:
         return response_base.fail(data=f"步骤排序失败: {str(e)}")

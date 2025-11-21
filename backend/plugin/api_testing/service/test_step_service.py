@@ -4,7 +4,9 @@
 API测试步骤服务层
 """
 from typing import List, Optional
-from sqlalchemy import select, update, delete
+
+from fastapi import Query
+from sqlalchemy import select, update, delete, func
 from backend.database.db import async_db_session
 from backend.plugin.api_testing.model.models import ApiTestStep, ApiTestCase
 from backend.plugin.api_testing.schema.request import TestStepCreateRequest, TestStepUpdateRequest
@@ -24,7 +26,6 @@ class TestStepService:
             test_case = test_case_result.scalar_one_or_none()
             if not test_case:
                 raise ValueError(f"测试用例ID {step_data.test_case_id} 不存在")
-
             test_step = ApiTestStep(
                 name=step_data.name,
                 test_case_id=step_data.test_case_id,
@@ -36,7 +37,7 @@ class TestStepService:
                 files=step_data.files,
                 auth=step_data.auth,
                 extract=step_data.extract,
-                validate=step_data.validate,
+                validate=step_data.validations,
                 sql_queries=step_data.sql_queries,
                 timeout=step_data.timeout,
                 retry=step_data.retry,
@@ -57,21 +58,33 @@ class TestStepService:
             return result.scalar_one_or_none()
 
     @staticmethod
-    async def get_test_steps(test_case_id: Optional[int] = None, skip: int = 0, limit: int = 100) -> List[ApiTestStep]:
+    async def get_test_steps(
+            test_case_id: Optional[int] = None,
+            name: Optional[str] = None,
+            method: Optional[str] = None,
+            status: Optional[int] = Query(None, description="测试步骤状态，不传或传空表示查询所有状态"),
+            skip: int = 0,
+            limit: int = 20
+    ) -> List[ApiTestStep]:
         """获取测试步骤列表"""
         async with async_db_session() as db:
             query = select(ApiTestStep).order_by(ApiTestStep.order)
 
             if test_case_id:
                 query = query.where(ApiTestStep.test_case_id == test_case_id)
-
+            if name is not None and name.strip():
+                query = query.where(ApiTestStep.name.ilike(f"%{name}%"))
+            if method:
+                query = query.where(ApiTestStep.method == method)
+            if status is not None:
+                query = query.where(ApiTestStep.status == status)
             query = query.offset(skip).limit(limit)
             result = await db.execute(query)
             return result.scalars().all()
 
     @staticmethod
     async def update_test_step(step_id: int, step_data: TestStepUpdateRequest) -> Optional[ApiTestStep]:
-        """更新测试步骤"""
+        """获取测试步骤总数"""
         async with async_db_session() as db:
             # 构建更新数据
             update_data = {}
@@ -80,7 +93,7 @@ class TestStepService:
             if step_data.url is not None:
                 update_data['url'] = step_data.url
             if step_data.method is not None:
-                update_data['method'] = step_data.method
+                update_data['method'] = str(step_data.method)
             if step_data.headers is not None:
                 update_data['headers'] = step_data.headers
             if step_data.params is not None:
@@ -94,7 +107,7 @@ class TestStepService:
             if step_data.extract is not None:
                 update_data['extract'] = step_data.extract
             if step_data.validate is not None:
-                update_data['validate'] = step_data.validate
+                update_data['validate'] = step_data.dict().get('validate')  # 或者
             if step_data.sql_queries is not None:
                 update_data['sql_queries'] = step_data.sql_queries
             if step_data.timeout is not None:
@@ -111,8 +124,8 @@ class TestStepService:
             if update_data:
                 await db.execute(
                     update(ApiTestStep)
-                        .where(ApiTestStep.id == step_id)
-                        .values(**update_data)
+                    .where(ApiTestStep.id == step_id)
+                    .values(**update_data)
                 )
                 await db.commit()
 
@@ -146,9 +159,9 @@ class TestStepService:
                 for item in step_orders:
                     await db.execute(
                         update(ApiTestStep)
-                            .where(ApiTestStep.id == item['step_id'])
-                            .where(ApiTestStep.test_case_id == test_case_id)
-                            .values(order=item['order'])
+                        .where(ApiTestStep.id == item['step_id'])
+                        .where(ApiTestStep.test_case_id == test_case_id)
+                        .values(order=item['order'])
                     )
                 await db.commit()
                 return True

@@ -4,7 +4,6 @@
 API测试用例服务层
 """
 from typing import List, Optional
-
 from fastapi import Query
 from sqlalchemy import select, update, delete, func
 from sqlalchemy.orm import selectinload
@@ -46,11 +45,11 @@ class TestCaseService:
 
     @staticmethod
     async def get_test_cases(
-            skip: int = 0,
-            limit: int = 20,
-            name: Optional[str] = None,
             project_id: Optional[int] = None,
             status: Optional[int] = Query(None, description="测试用例状态，不传或传空表示查询所有状态"),
+            name: Optional[str] = None,
+            skip: int = 0,
+            limit: int = 20,
     ) -> List[ApiTestCase]:
         """获取测试用例列表"""
         async with async_db_session() as db:

@@ -3,9 +3,10 @@
 """
 请求相关模型
 """
+from enum import Enum
 from typing import Any, Dict, List, Optional
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 from backend.plugin.api_testing.utils.http_client import RequestOptions
 
 
@@ -79,7 +80,6 @@ class TestStepRequest(BaseModel):
 
 
 class TestStepResponse(BaseModel):
-    """测试步骤响应"""
     id: int
     name: str
     test_case_id: int

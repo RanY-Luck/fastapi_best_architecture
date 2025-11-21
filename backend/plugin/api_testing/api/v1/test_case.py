@@ -69,7 +69,7 @@ async def get_test_cases(
     status: Optional[int] = Query(None, description="状态"),
     name: Optional[str] = Query(None, description="用例名称"),
     skip: int = Query(0, description="跳过数量"),
-    limit: int = Query(100, description="限制数量")
+    limit: int = Query(20, description="限制数量")
 ) -> ResponseModel | ResponseSchemaModel:
     """
     获取测试用例列表
