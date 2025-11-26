@@ -6,6 +6,8 @@ API测试报告服务层
 from typing import List, Optional
 from datetime import datetime, timedelta
 from sqlalchemy import select, delete, func
+from sqlalchemy.orm import joinedload
+
 from backend.database.db import async_db_session
 from backend.plugin.api_testing.model.models import ApiTestReport, ApiTestCase, ApiProject
 from backend.plugin.api_testing.schema.request import TestReportCreateRequest
@@ -62,7 +64,9 @@ class TestReportService:
     ) -> List[ApiTestReport]:
         """获取测试报告列表"""
         async with async_db_session() as db:
-            query = select(ApiTestReport).order_by(ApiTestReport.created_time.desc())
+            query = select(ApiTestReport).options(
+                joinedload(ApiTestReport.test_case)
+            )
 
             if test_case_id:
                 query = query.where(ApiTestReport.test_case_id == test_case_id)
@@ -76,7 +80,7 @@ class TestReportService:
             if success_only is not None:
                 query = query.where(ApiTestReport.success == success_only)
 
-            query = query.offset(skip).limit(limit)
+            query = query.offset(skip).limit(limit).order_by(ApiTestReport.created_time.desc())
             result = await db.execute(query)
             return result.scalars().all()
 
@@ -100,7 +104,7 @@ class TestReportService:
             query = select(func.count(ApiTestReport.id))
 
             if test_case_id:
-                query = query.where(ApiTestReport.test_case_id == test_case_id)
+                query = query.where(ApiTestReport.test_case_id == ApiTestCase.id)
 
             if start_date:
                 query = query.where(ApiTestReport.created_time >= start_date)

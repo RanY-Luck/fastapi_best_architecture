@@ -7,6 +7,8 @@ from typing import List, Optional
 
 from fastapi import Query
 from sqlalchemy import select, update, delete, func
+from sqlalchemy.orm import joinedload
+
 from backend.database.db import async_db_session
 from backend.plugin.api_testing.model.models import ApiTestStep, ApiTestCase
 from backend.plugin.api_testing.schema.request import TestStepCreateRequest, TestStepUpdateRequest
@@ -68,7 +70,9 @@ class TestStepService:
     ) -> List[ApiTestStep]:
         """获取测试步骤列表"""
         async with async_db_session() as db:
-            query = select(ApiTestStep).order_by(ApiTestStep.order)
+            query = select(ApiTestStep).options(
+                joinedload(ApiTestStep.test_case)
+            )
 
             if test_case_id:
                 query = query.where(ApiTestStep.test_case_id == test_case_id)
@@ -78,7 +82,8 @@ class TestStepService:
                 query = query.where(ApiTestStep.method == method)
             if status is not None:
                 query = query.where(ApiTestStep.status == status)
-            query = query.offset(skip).limit(limit)
+
+            query = query.offset(skip).limit(limit).order_by(ApiTestStep.created_time.desc())
             result = await db.execute(query)
             return result.scalars().all()
 

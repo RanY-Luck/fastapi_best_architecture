@@ -135,9 +135,12 @@ async def get_test_reports(
 
         report_list = []
         for test_report in test_reports:
+            # 获取关联的测试用例名称
+            test_case_name = test_report.test_case.name if test_report.test_case else None
             report_response = TestReportResponse(
                 id=test_report.id,
                 test_case_id=test_report.test_case_id,
+                test_case_name=test_case_name,
                 name=test_report.name,
                 success=test_report.success,
                 total_steps=test_report.total_steps,

@@ -114,10 +114,12 @@ async def get_test_steps(
 
         step_list = []
         for test_step in test_steps:
+            test_case_name = test_step.test_case.name if test_step.test_case else None
             step_response = TestStepResponse(
                 id=test_step.id,
                 name=test_step.name,
                 test_case_id=test_step.test_case_id,
+                test_case_name=test_case_name,
                 url=test_step.url,
                 method=test_step.method,
                 headers=test_step.headers,

@@ -51,6 +51,7 @@ class TestCaseResponse(BaseModel):
     id: int
     name: str
     project_id: int
+    project_name: Optional[str] = None
     description: Optional[str] = None
     pre_script: Optional[str] = None
     post_script: Optional[str] = None
@@ -83,6 +84,7 @@ class TestStepResponse(BaseModel):
     id: int
     name: str
     test_case_id: int
+    test_case_name: Optional[str] = None
     url: str
     method: str
     headers: Optional[Dict[str, str]] = None
@@ -169,7 +171,7 @@ class TestStepCreateRequest(BaseModel):
     files: Optional[Dict[str, str]] = Field(None, description="上传文件")
     auth: Optional[Dict[str, str]] = Field(None, description="认证信息")
     extract: Optional[Dict[str, str]] = Field(None, description="提取变量")
-    validations: Optional[List[Dict[str, Any]]] = Field(None, description="断言列表")  # 改这里
+    validations: Optional[List[Dict[str, Any]]] = Field(None, description="断言列表")
     sql_queries: Optional[List[Dict[str, Any]]] = Field(None, description="SQL查询列表")
     timeout: int = Field(30, ge=1, le=3600, description="超时时间(秒)，范围1-3600")
     retry: int = Field(0, ge=0, le=10, description="重试次数，范围0-10")
@@ -189,7 +191,7 @@ class TestStepUpdateRequest(BaseModel):
     files: Optional[Dict[str, str]] = Field(None, description="上传文件")
     auth: Optional[Dict[str, str]] = Field(None, description="认证信息")
     extract: Optional[Dict[str, str]] = Field(None, description="提取变量")
-    validations: Optional[List[Dict[str, Any]]] = Field(None, description="断言列表")  # 改这里
+    validations: Optional[List[Dict[str, Any]]] = Field(None, description="断言列表")
     sql_queries: Optional[List[Dict[str, Any]]] = Field(None, description="SQL查询列表")
     timeout: Optional[int] = Field(None, ge=1, le=3600, description="超时时间(秒)，范围1-3600")
     retry: Optional[int] = Field(None, ge=0, le=10, description="重试次数，范围0-10")
@@ -217,6 +219,7 @@ class TestReportResponse(BaseModel):
     """测试报告响应"""
     id: int
     test_case_id: int
+    test_case_name: Optional[str] = None
     name: str
     success: int
     total_steps: int

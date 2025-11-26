@@ -46,7 +46,7 @@ async def get_test_case(case_id: int = Path(..., description="用例ID")) -> Res
         test_case = await TestCaseService.get_test_case_by_id(case_id)
         if not test_case:
             return response_base.fail(data="测试用例不存在")
-        
+
         case_response = TestCaseResponse(
             id=test_case.id,
             name=test_case.name,
@@ -65,25 +65,34 @@ async def get_test_case(case_id: int = Path(..., description="用例ID")) -> Res
 
 @router.get("", response_model=ResponseModel, summary="获取测试用例列表")
 async def get_test_cases(
-    project_id: Optional[int] = Query(None, description="项目ID"),
-    status: Optional[int] = Query(None, description="状态"),
-    name: Optional[str] = Query(None, description="用例名称"),
-    skip: int = Query(0, description="跳过数量"),
-    limit: int = Query(20, description="限制数量")
+        project_id: Optional[int] = Query(None, description="项目ID"),
+        status: Optional[int] = Query(None, description="状态"),
+        name: Optional[str] = Query(None, description="用例名称"),
+        skip: int = Query(0, description="跳过数量"),
+        limit: int = Query(20, description="限制数量")
 ) -> ResponseModel | ResponseSchemaModel:
     """
     获取测试用例列表
     """
     try:
-        test_cases = await TestCaseService.get_test_cases(project_id=project_id,name=name, status=status, skip=skip, limit=limit)
+        test_cases = await TestCaseService.get_test_cases(
+            project_id=project_id,
+            name=name,
+            status=status,
+            skip=skip,
+            limit=limit
+        )
         total = await TestCaseService.get_test_case_count(name=name, status=status)
-        
+
         case_list = []
         for test_case in test_cases:
+            # 获取关联的所属项目名称
+            project_name = test_case.project.name if test_case.project else None
             case_response = TestCaseResponse(
                 id=test_case.id,
                 name=test_case.name,
                 project_id=test_case.project_id,
+                project_name=project_name,
                 description=test_case.description,
                 pre_script=test_case.pre_script,
                 post_script=test_case.post_script,
@@ -92,22 +101,24 @@ async def get_test_cases(
                 updated_time=test_case.updated_time.isoformat() if test_case.updated_time else ""
             )
             case_list.append(case_response.model_dump())
-        
-        return response_base.success(data={
-            "items": case_list,
-            "total": total,
-            "skip": skip,
-            "limit": limit,
-            "project_id": project_id
-        })
+
+        return response_base.success(
+            data={
+                "items": case_list,
+                "total": total,
+                "skip": skip,
+                "limit": limit,
+                "project_id": project_id
+            }
+        )
     except Exception as e:
         return response_base.fail(data=f"获取测试用例列表失败: {str(e)}")
 
 
 @router.put("/{case_id}", response_model=ResponseModel, summary="更新测试用例")
 async def update_test_case(
-    case_data: TestCaseUpdateRequest,
-    case_id: int = Path(..., description="用例ID")
+        case_data: TestCaseUpdateRequest,
+        case_id: int = Path(..., description="用例ID")
 ) -> ResponseModel | ResponseSchemaModel:
     """
     更新测试用例
@@ -116,7 +127,7 @@ async def update_test_case(
         test_case = await TestCaseService.update_test_case(case_id, case_data)
         if not test_case:
             return response_base.fail(data="测试用例不存在")
-        
+
         case_response = TestCaseResponse(
             id=test_case.id,
             name=test_case.name,
@@ -142,7 +153,7 @@ async def delete_test_case(case_id: int = Path(..., description="用例ID")) -> 
         success = await TestCaseService.delete_test_case(case_id)
         if not success:
             return response_base.fail(data="测试用例不存在或删除失败")
-        
+
         return response_base.success(data="测试用例删除成功")
     except Exception as e:
         return response_base.fail(data=f"删除测试用例失败: {str(e)}")

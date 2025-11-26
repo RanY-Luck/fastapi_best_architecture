@@ -6,7 +6,7 @@ API测试用例服务层
 from typing import List, Optional
 from fastapi import Query
 from sqlalchemy import select, update, delete, func
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, joinedload
 from backend.database.db import async_db_session
 from backend.plugin.api_testing.model.models import ApiTestCase
 from backend.plugin.api_testing.schema.request import TestCaseCreateRequest, TestCaseUpdateRequest
@@ -53,14 +53,18 @@ class TestCaseService:
     ) -> List[ApiTestCase]:
         """获取测试用例列表"""
         async with async_db_session() as db:
-            query = select(ApiTestCase).options(selectinload(ApiTestCase.steps))
+            query = select(ApiTestCase).options(
+                joinedload(ApiTestCase.project)
+            )
+
             if name is not None and name.strip():
                 query = query.where(ApiTestCase.name.ilike(f"%{name}%"))
             if project_id:
                 query = query.where(ApiTestCase.project_id == project_id)
             if status is not None:
                 query = query.where(ApiTestCase.status == status)
-            query = query.offset(skip).limit(limit)
+
+            query = query.offset(skip).limit(limit).order_by(ApiTestCase.created_time.desc())
             result = await db.execute(query)
             return result.scalars().all()
 
