@@ -95,6 +95,8 @@ class TestStepService:
             update_data = {}
             if step_data.name is not None:
                 update_data['name'] = step_data.name
+            if step_data.test_case_id is not None:
+                update_data['test_case_id'] = step_data.test_case_id
             if step_data.url is not None:
                 update_data['url'] = step_data.url
             if step_data.method is not None:

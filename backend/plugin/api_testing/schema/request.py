@@ -184,6 +184,7 @@ class TestStepUpdateRequest(BaseModel):
     """测试步骤更新请求"""
     name: Optional[str] = Field(None, description="步骤名称")
     url: Optional[str] = Field(None, description="请求URL")
+    test_case_id: int = Field(..., description="所属用例ID")
     method: Optional[str] = Field(None, description="请求方法")
     headers: Optional[Dict[str, str]] = Field(None, description="请求头")
     params: Optional[Dict[str, Any]] = Field(None, description="查询参数")
