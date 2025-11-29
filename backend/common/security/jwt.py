@@ -1,16 +1,13 @@
 import json
+import uuid
 
 from datetime import timedelta
 from typing import Any
-from uuid import uuid4
 
-from fastapi import Depends, HTTPException, Request
+from fastapi import Depends, Request
 from fastapi.security import HTTPBearer
-from fastapi.security.http import HTTPAuthorizationCredentials
 from fastapi.security.utils import get_authorization_scheme_param
 from jose import ExpiredSignatureError, JWTError, jwt
-from pwdlib import PasswordHash
-from pwdlib.hashers.bcrypt import BcryptHasher
 from pydantic_core import from_json
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,55 +15,13 @@ from backend.app.admin.model import User
 from backend.app.admin.schema.user import GetUserInfoWithRelationDetail
 from backend.common.dataclasses import AccessToken, NewToken, RefreshToken, TokenPayload
 from backend.common.exception import errors
-from backend.common.exception.errors import TokenError
 from backend.core.conf import settings
 from backend.database.db import async_db_session
 from backend.database.redis import redis_client
 from backend.utils.timezone import timezone
 
-
-class CustomHTTPBearer(HTTPBearer):
-    """
-    自定义 HTTPBearer 认证类
-
-    Issues: https://github.com/fastapi/fastapi/issues/10177
-    """
-
-    async def __call__(self, request: Request) -> HTTPAuthorizationCredentials | None:
-        try:
-            return await super().__call__(request)
-        except HTTPException as e:
-            if e.status_code == 403:
-                raise TokenError
-            raise
-
-
-# JWT authorizes dependency injection
-DependsJwtAuth = Depends(CustomHTTPBearer())
-
-password_hash = PasswordHash((BcryptHasher(),))
-
-
-def get_hash_password(password: str, salt: bytes | None) -> str:
-    """
-    使用哈希算法加密密码
-
-    :param password: 密码
-    :param salt: 盐值
-    :return:
-    """
-    return password_hash.hash(password, salt=salt)
-
-
-def password_verify(plain_password: str, hashed_password: str) -> bool:
-    """
-    密码验证
-
-    :param plain_password: 待验证的密码
-    :param hashed_password: 哈希密码
-    :return:
-    """
-    return password_hash.verify(plain_password, hashed_password)
+# JWT dependency injection
+DependsJwtAuth = Depends(HTTPBearer())
 
 
 def jwt_encode(payload: dict[str, Any]) -> str:
@@ -119,7 +74,7 @@ async def create_access_token(user_id: int, *, multi_login: bool, **kwargs) -> A
     :return:
     """
     expire = timezone.now() + timedelta(seconds=settings.TOKEN_EXPIRE_SECONDS)
-    session_uuid = str(uuid4())
+    session_uuid = str(uuid.uuid4())
     access_token = jwt_encode({
         'session_uuid': session_uuid,
         'exp': timezone.to_utc(expire).timestamp(),
