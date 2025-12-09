@@ -55,15 +55,15 @@ def get_plugins() -> list[str]:
     return plugin_packages
 
 
-def get_plugin_models() -> list[type]:
+def get_plugin_models() -> list[object]:
     """获取插件所有模型类"""
     objs = []
 
     for plugin in get_plugins():
         module_path = f'backend.plugin.{plugin}.model'
-        obj = get_model_objects(module_path)
-        if obj:
-            objs.extend(obj)
+        model_objs = get_model_objects(module_path)
+        if model_objs:
+            objs.extend(model_objs)
 
     return objs
 
@@ -79,16 +79,16 @@ async def get_plugin_sql(plugin: str, db_type: DataBaseType, pk_type: PrimaryKey
     """
     if db_type == DataBaseType.mysql:
         mysql_dir = PLUGIN_DIR / plugin / 'sql' / 'mysql'
-        if pk_type == PrimaryKeyType.autoincrement:
-            sql_file = mysql_dir / 'init.sql'
-        else:
-            sql_file = mysql_dir / 'init_snowflake.sql'
+        sql_file = (
+            mysql_dir / 'init.sql' if pk_type == PrimaryKeyType.autoincrement else mysql_dir / 'init_snowflake.sql'
+        )
     else:
         postgresql_dir = PLUGIN_DIR / plugin / 'sql' / 'postgresql'
-        if pk_type == PrimaryKeyType.autoincrement:
-            sql_file = postgresql_dir / 'init.sql'
-        else:
-            sql_file = postgresql_dir / 'init_snowflake.sql'
+        sql_file = (
+            postgresql_dir / 'init.sql'
+            if pk_type == PrimaryKeyType.autoincrement
+            else postgresql_dir / 'init_snowflake.sql'
+        )
 
     path = anyio.Path(sql_file)
     if not await path.exists():
