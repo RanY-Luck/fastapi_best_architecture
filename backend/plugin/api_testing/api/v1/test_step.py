@@ -162,7 +162,7 @@ async def update_test_step(
     更新测试步骤
     """
     try:
-        test_step = await TestStepService.update_test_step(step_id, step_data)
+        test_step = await TestStepService.update_test_step(step_id, step_data, partial=False)
         if not test_step:
             return response_base.fail(data="测试步骤不存在")
 

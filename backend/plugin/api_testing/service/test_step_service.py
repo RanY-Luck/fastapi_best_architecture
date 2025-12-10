@@ -88,45 +88,27 @@ class TestStepService:
             return result.scalars().all()
 
     @staticmethod
-    async def update_test_step(step_id: int, step_data: TestStepUpdateRequest) -> Optional[ApiTestStep]:
-        """获取测试步骤总数"""
+    async def update_test_step(
+            step_id: int,
+            step_data: TestStepUpdateRequest,
+            partial: bool = True  # True=PATCH部分更新, False=PUT完整更新
+    ) -> Optional[ApiTestStep]:
+        """更新测试步骤"""
         async with async_db_session() as db:
-            # 构建更新数据
-            update_data = {}
-            if step_data.name is not None:
-                update_data['name'] = step_data.name
-            if step_data.test_case_id is not None:
-                update_data['test_case_id'] = step_data.test_case_id
-            if step_data.url is not None:
-                update_data['url'] = step_data.url
-            if step_data.method is not None:
-                update_data['method'] = str(step_data.method)
-            if step_data.headers is not None:
-                update_data['headers'] = step_data.headers
-            if step_data.params is not None:
-                update_data['params'] = step_data.params
-            if step_data.body is not None:
-                update_data['body'] = step_data.body
-            if step_data.files is not None:
-                update_data['files'] = step_data.files
-            if step_data.auth is not None:
-                update_data['auth'] = step_data.auth
-            if step_data.extract is not None:
-                update_data['extract'] = step_data.extract
-            if step_data.validate is not None:
-                update_data['validate'] = step_data.dict().get('validate')  # 或者
-            if step_data.sql_queries is not None:
-                update_data['sql_queries'] = step_data.sql_queries
-            if step_data.timeout is not None:
-                update_data['timeout'] = step_data.timeout
-            if step_data.retry is not None:
-                update_data['retry'] = step_data.retry
-            if step_data.retry_interval is not None:
-                update_data['retry_interval'] = step_data.retry_interval
-            if step_data.order is not None:
-                update_data['order'] = step_data.order
-            if step_data.status is not None:
-                update_data['status'] = step_data.status
+            if partial:
+                # PATCH: 只更新传递的字段
+                update_data = step_data.model_dump(exclude_unset=True)
+            else:
+                # PUT: 完整更新,未传递的字段使用模型默认值或 None
+                update_data = step_data.model_dump(exclude_unset=False)
+
+            # 特殊处理 method 字段
+            if 'method' in update_data and update_data['method'] is not None:
+                update_data['method'] = str(update_data['method'])
+
+            # 处理字段名映射
+            if 'validations' in update_data:
+                update_data['validate'] = update_data.pop('validations')
 
             if update_data:
                 await db.execute(
@@ -136,7 +118,6 @@ class TestStepService:
                 )
                 await db.commit()
 
-            # 返回更新后的步骤
             result = await db.execute(select(ApiTestStep).where(ApiTestStep.id == step_id))
             return result.scalar_one_or_none()
 
