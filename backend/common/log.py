@@ -37,7 +37,7 @@ class InterceptHandler(logging.Handler):
 
 
 def default_formatter(record: logging.LogRecord) -> dict[str, Any]:
-    """默认日1志格式化程序"""
+    """默认日志格式化程序"""
 
     # 重写 sqlalchemy echo 输出
     # https://github.com/sqlalchemy/sqlalchemy/discussions/12791
