@@ -3,8 +3,8 @@
 """
 API测试用例管理接口
 """
-from typing import List, Optional
-from fastapi import APIRouter, Path, Query, HTTPException
+from typing import  Optional
+from fastapi import APIRouter, Path, Query
 from backend.common.response.response_schema import response_base, ResponseModel, ResponseSchemaModel
 from backend.plugin.api_testing.service.test_case_service import TestCaseService
 from backend.plugin.api_testing.schema.request import (

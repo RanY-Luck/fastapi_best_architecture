@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 from typing import List
-from sqlalchemy import String, Text, DateTime, Boolean, JSON, ForeignKey
+from sqlalchemy import String, Text, DateTime, JSON, ForeignKey
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from backend.common.enums import StatusType
 from backend.common.model import Base, id_key

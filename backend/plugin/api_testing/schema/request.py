@@ -3,10 +3,9 @@
 """
 请求相关模型
 """
-from enum import Enum
 from typing import Any, Dict, List, Optional
 from datetime import datetime
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field
 from backend.plugin.api_testing.utils.http_client import RequestOptions
 
 
