@@ -3,11 +3,15 @@
 """
 请求相关模型
 """
+from pydantic import BaseModel, Field
 from typing import Any, Dict, List, Optional
 from datetime import datetime
-from pydantic import BaseModel, Field
-from backend.plugin.api_testing.utils.http_client import RequestOptions
-
+from jsonpath_ng import parse
+from backend.plugin.api_testing.utils.http_client import send_request, RequestOptions, RequestResult
+from backend.plugin.api_testing.utils.assertion import AssertionEngine, Assertion
+from backend.plugin.api_testing.utils.sql_executor import SQLExecutor, SQLQuery
+from backend.plugin.api_testing.model.models import ApiTestStep
+from backend.common.log import log
 
 class ApiRequestSchema(BaseModel):
     """API请求模型"""
@@ -236,3 +240,240 @@ class TestReportResponse(BaseModel):
 class StepReorderRequest(BaseModel):
     """步骤重新排序请求"""
     step_orders: List[Dict[str, int]] = Field(..., description="步骤排序列表，包含step_id和order字段")
+
+
+class StepExecutionResult:
+    """步骤执行结果"""
+
+    def __init__(self):
+        self.success = True
+        self.error = None
+        self.request_data = {}
+        self.response_data = {}
+        self.assertions = []
+        self.sql_results = []
+        self.extracted_variables = {}
+        self.start_time = None
+        self.end_time = None
+        self.duration = 0
+
+    def to_dict(self):
+        """转换为字典"""
+        return {
+            "success": self.success,
+            "error": self.error,
+            "request_data": self.request_data,
+            "response_data": self.response_data,
+            "assertions": self.assertions,
+            "sql_results": self.sql_results,
+            "extracted_variables": self.extracted_variables,
+            "start_time": self.start_time.isoformat() if self.start_time else None,
+            "end_time": self.end_time.isoformat() if self.end_time else None,
+            "duration": self.duration
+        }
+
+
+class RequestEngine:
+    """请求执行引擎"""
+
+    @staticmethod
+    async def execute_step(
+            step: ApiTestStep,
+            base_url: str,
+            global_headers: Optional[Dict[str, str]] = None,
+            variables: Optional[Dict[str, Any]] = None
+    ) -> StepExecutionResult:
+        """
+        执行测试步骤
+
+        :param step: 测试步骤对象
+        :param base_url: 项目基础URL
+        :param global_headers: 全局请求头
+        :param variables: 共享变量
+        :return: 步骤执行结果
+        """
+        result = StepExecutionResult()
+        result.start_time = datetime.now()
+        variables = variables or {}
+
+        try:
+            # 1. 构建完整URL
+            url = RequestEngine._build_url(step.url, base_url)
+
+            # 2. 合并请求头
+            headers = RequestEngine._merge_headers(global_headers, step.headers)
+
+            # 3. 替换变量（如果需要支持变量模板）
+            # url, headers, params, body = await RequestEngine._process_variables(
+            #     url, headers, step.params, step.body, variables
+            # )
+
+            # 4. 准备请求选项
+            request_options = RequestOptions(
+                timeout=step.timeout,
+                retry_count=step.retry,
+                retry_interval=step.retry_interval
+            )
+
+            # 5. 发送HTTP请求
+            response = await send_request(
+                method=step.method,
+                url=url,
+                params=step.params,
+                headers=headers,
+                json_data=step.body,
+                options=request_options
+            )
+
+            # 6. 构建请求数据
+            result.request_data = {
+                "url": url,
+                "method": step.method,
+                "headers": headers,
+                "params": step.params or {},
+                "json_data": step.body
+            }
+
+            # 7. 构建响应数据
+            result.response_data = {
+                "status_code": response.status_code,
+                "headers": response.headers,
+                "json": response.json_data,
+                "text": response.text,
+                "elapsed_time": response.elapsed_time
+            }
+
+            # 8. 检查响应错误
+            if response.error:
+                result.success = False
+                result.error = response.error
+                return result
+
+            # 9. 执行断言
+            if step.validate:
+                assertions_success = await RequestEngine._execute_assertions(
+                    step.validate, result.response_data, result
+                )
+                if not assertions_success:
+                    result.success = False
+
+            # 10. 执行SQL查询
+            if step.sql_queries:
+                sql_success = await RequestEngine._execute_sql_queries(
+                    step.sql_queries, result, variables
+                )
+                if not sql_success:
+                    result.success = False
+
+            # 11. 提取变量
+            if step.extract and response.json_data:
+                RequestEngine._extract_variables(
+                    step.extract, response.json_data, result, variables
+                )
+
+        except Exception as e:
+            result.success = False
+            result.error = str(e)
+            log.error(f"执行测试步骤失败: {e}")
+
+        finally:
+            result.end_time = datetime.now()
+            result.duration = int((result.end_time - result.start_time).total_seconds() * 1000)
+
+        return result
+
+    @staticmethod
+    def _build_url(url: str, base_url: str) -> str:
+        """构建完整URL"""
+        if url.startswith('http'):
+            return url
+
+        base_url = base_url.rstrip('/')
+        if url.startswith('/'):
+            return f"{base_url}{url}"
+        else:
+            return f"{base_url}/{url}"
+
+    @staticmethod
+    def _merge_headers(
+            global_headers: Optional[Dict[str, str]],
+            step_headers: Optional[Dict[str, str]]
+    ) -> Dict[str, str]:
+        """合并请求头"""
+        headers = {}
+        if global_headers:
+            headers.update(global_headers)
+        if step_headers:
+            headers.update(step_headers)
+        return headers
+
+    @staticmethod
+    async def _execute_assertions(
+            assertions_config: List[Dict[str, Any]],
+            response_data: Dict[str, Any],
+            result: StepExecutionResult
+    ) -> bool:
+        """执行断言"""
+        all_success = True
+
+        for assertion_dict in assertions_config:
+            try:
+                assertion = Assertion(**assertion_dict)
+                assertion_result = AssertionEngine.execute_assertion(assertion, response_data)
+                result.assertions.append(assertion_result.model_dump())
+
+                if not assertion_result.success:
+                    all_success = False
+            except Exception as e:
+                log.error(f"执行断言失败: {e}")
+                all_success = False
+
+        return all_success
+
+    @staticmethod
+    async def _execute_sql_queries(
+            sql_configs: List[Dict[str, Any]],
+            result: StepExecutionResult,
+            variables: Dict[str, Any]
+    ) -> bool:
+        """执行SQL查询"""
+        all_success = True
+
+        for sql_dict in sql_configs:
+            try:
+                sql_query = SQLQuery(**sql_dict)
+                sql_result = await SQLExecutor.execute_query(sql_query)
+                result.sql_results.append(sql_result.model_dump())
+
+                if not sql_result.success:
+                    all_success = False
+
+                # 提取SQL变量
+                if sql_result.extracted_variables:
+                    variables.update(sql_result.extracted_variables)
+                    result.extracted_variables.update(sql_result.extracted_variables)
+            except Exception as e:
+                log.error(f"执行SQL查询失败: {e}")
+                all_success = False
+
+        return all_success
+
+    @staticmethod
+    def _extract_variables(
+            extract_config: Dict[str, str],
+            json_data: Dict[str, Any],
+            result: StepExecutionResult,
+            variables: Dict[str, Any]
+    ):
+        """提取变量"""
+        for var_name, json_path in extract_config.items():
+            try:
+                jsonpath_expr = parse(json_path)
+                matches = [match.value for match in jsonpath_expr.find(json_data)]
+
+                if matches:
+                    value = matches[0] if len(matches) == 1 else matches
+                    variables[var_name] = value
+                    result.extracted_variables[var_name] = value
+            except Exception as e:
+                log.error(f"提取变量 {var_name} 失败: {e}")
