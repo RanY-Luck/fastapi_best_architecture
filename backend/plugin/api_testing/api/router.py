@@ -15,6 +15,8 @@ from backend.plugin.api_testing.api.v1.project import router as project_router
 from backend.plugin.api_testing.api.v1.test_case import router as test_case_router
 from backend.plugin.api_testing.api.v1.test_step import router as test_step_router
 from backend.plugin.api_testing.api.v1.test_report import router as test_report_router
+from backend.plugin.api_testing.api.v1.step_helper import router as step_helper_router
+from backend.plugin.api_testing.api.v1.test_step_enhanced import router as step_enhanced_router
 
 v1 = APIRouter(prefix=f'{settings.FASTAPI_API_V1_PATH}/api_testing', tags=['接口自动化测试'])
 
@@ -33,3 +35,5 @@ v1.include_router(environment_router, prefix='/environments', tags=['环境管�
 v1.include_router(mock_router, prefix='/mocks', tags=['Mock服务'])
 v1.include_router(data_driven_router, prefix='/data_driven', tags=['数据驱动'])
 v1.include_router(history_router, prefix='/history', tags=['历史记录'])
+v1.include_router(step_helper_router, prefix='/step_helper', tags=['测试步骤辅助'])
+v1.include_router(step_enhanced_router, prefix='/test_steps', tags=['测试步骤增强'])
