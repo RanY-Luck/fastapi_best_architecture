@@ -680,26 +680,24 @@ class EnvironmentManager:
 
     @classmethod
     async def list_environments(cls, project_id: int) -> List[EnvironmentModel]:
-        """
-        获取项目环境列表
-        
-        :param project_id: 项目ID
-        :return: 环境列表
-        """
         try:
-            # 构建Redis键模式
             pattern = f"{cls.REDIS_KEY_PREFIX}*"
-
-            # 获取所有匹配的键
-            keys = await redis_client.keys(pattern)
-
             environments = []
-            for key in keys:
-                data = await redis_client.get(key)
-                if data:
-                    env = EnvironmentModel.model_validate_json(data)
-                    if env.project_id == project_id:
-                        environments.append(env)
+            cursor = 0
+            while True:
+                cursor, keys = await redis_client.scan(cursor=cursor, match=pattern, count=100)
+                for key in keys:
+                    data = await redis_client.get(key)
+                    if not data:
+                        continue
+                    try:
+                        env = EnvironmentModel.model_validate_json(data)
+                        if env.project_id == project_id:
+                            environments.append(env)
+                    except Exception as parse_e:
+                        continue
+                if cursor == 0:
+                    break
 
             return environments
         except Exception as e:
@@ -707,22 +705,20 @@ class EnvironmentManager:
             return []
 
     @classmethod
-    async def get_default_environment(cls, project_id: int) -> Optional[EnvironmentModel]:
+    async def get_default_environment(cls, project_id : int):
         """
         获取项目默认环境
         
-        :param project_id: 项目ID
+        :param project_id : 项目ID
         :return: 默认环境信息
         """
         try:
             # 构建Redis键
-            key = f"{cls.REDIS_KEY_PREFIX}default:{project_id}"
+            key = f"{cls.REDIS_KEY_PREFIX}default:{project_id }"
             # 获取默认环境ID
             environment_id = await redis_client.get(key)
-            print("--->", environment_id)
             if not environment_id:
                 return None
-
             # 获取环境信息
             return await cls.get_environment(int(environment_id))
         except Exception as e:

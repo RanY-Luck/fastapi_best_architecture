@@ -5,7 +5,6 @@
 """
 from typing import Dict, Optional, Any
 from fastapi import APIRouter, Body, Path, Query
-
 from backend.common.response.response_schema import response_base, ResponseModel, ResponseSchemaModel
 from backend.plugin.api_testing.utils.environment import (
     EnvironmentManager, EnvironmentModel, VariableManager, VariableModel, VariableScope
@@ -15,7 +14,7 @@ router = APIRouter()
 
 
 # 环境管理接口
-@router.post("/environments", summary="创建环境")
+@router.post("/", summary="创建环境")
 async def create_environment(environment: EnvironmentModel) -> ResponseModel | ResponseSchemaModel:
     """
     创建环境
@@ -27,7 +26,7 @@ async def create_environment(environment: EnvironmentModel) -> ResponseModel | R
         return response_base.fail()
 
 
-@router.get("/environments/{environment_id}", summary="获取环境信息")
+@router.get("/{environment_id}", summary="获取环境信息")
 async def get_environment(environment_id: int = Path(description="环境ID")) -> ResponseModel | ResponseSchemaModel:
     """
     获取环境信息
@@ -39,7 +38,7 @@ async def get_environment(environment_id: int = Path(description="环境ID")) ->
         return response_base.fail()
 
 
-@router.put("/environments/{environment_id}", summary="更新环境信息")
+@router.put("/{environment_id}", summary="更新环境信息")
 async def update_environment(
         environment: EnvironmentModel,
         environment_id: int = Path(description="环境ID")
@@ -57,7 +56,7 @@ async def update_environment(
         return response_base.fail()
 
 
-@router.delete("/environments/{environment_id}", summary="删除环境")
+@router.delete("/{environment_id}", summary="删除环境")
 async def delete_environment(environment_id: int = Path(description="环境ID")) -> ResponseModel | ResponseSchemaModel:
     """
     删除环境
@@ -69,7 +68,7 @@ async def delete_environment(environment_id: int = Path(description="环境ID"))
         return response_base.fail()
 
 
-@router.get("/environments", summary="获取环境列表")
+@router.get("/", summary="获取环境列表")
 async def list_environments(project_id: int = Query(..., description="项目ID")) -> ResponseModel | ResponseSchemaModel:
     """
     获取项目环境列表
@@ -78,21 +77,21 @@ async def list_environments(project_id: int = Query(..., description="项目ID")
     return response_base.success(data=[env.model_dump() for env in environments])
 
 
-@router.get("/environments/default", summary="获取默认环境")
+@router.get("/default/{project_id}", summary="获取默认环境")
 async def get_default_environment(
-        project_id: int = Query(description="项目ID")
+        project_id : int = Path(..., description="项目ID")
 ) -> ResponseModel | ResponseSchemaModel:
     """
     获取项目默认环境
     """
-    environment = await EnvironmentManager.get_default_environment(project_id)
+    environment = await EnvironmentManager.get_default_environment(project_id )
     if environment:
         return response_base.success(data=environment.model_dump())
     else:
-        return response_base.success()
+        return response_base.fail()
 
 
-@router.put("/environments/{environment_id}/default", summary="设置默认环境")
+@router.put("/{environment_id}/default", summary="设置默认环境")
 async def set_default_environment(
         project_id: int = Query(description="项目ID"),
         environment_id: int = Path(description="环境ID")
