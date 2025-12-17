@@ -18,7 +18,7 @@ from backend.plugin.api_testing.api.v1.test_report import router as test_report_
 from backend.plugin.api_testing.api.v1.step_helper import router as step_helper_router
 from backend.plugin.api_testing.api.v1.test_step_enhanced import router as step_enhanced_router
 
-v1 = APIRouter(prefix=f'{settings.FASTAPI_API_V1_PATH}/api_testing', tags=['接口自动化测试'])
+v1 = APIRouter(prefix=f'{settings.FASTAPI_API_V1_PATH}/api_testing')
 
 # 数据管理接口
 v1.include_router(project_router, prefix='/projects', tags=['项目管理'])

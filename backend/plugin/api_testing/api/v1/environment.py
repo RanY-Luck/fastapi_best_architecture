@@ -119,7 +119,7 @@ async def create_variable(variable: VariableModel) -> ResponseModel | ResponseSc
         return response_base.fail()
 
 
-@router.get("/variables", summary="获取变量列表")
+@router.get("/variables/", summary="获取变量列表")
 async def list_variables(
         scope: VariableScope = Query(..., description="变量作用域"),
         project_id: Optional[int] = Query(None, description="项目ID"),
