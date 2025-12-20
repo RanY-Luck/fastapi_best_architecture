@@ -14,15 +14,16 @@ router = APIRouter()
 
 
 # 环境管理接口
-@router.post("/", summary="创建环境")
+@router.post("", summary="创建环境")
 async def create_environment(environment: EnvironmentModel) -> ResponseModel | ResponseSchemaModel:
-    """
-    创建环境
-    """
-    success = await EnvironmentManager.create_environment(environment)
-    if success:
-        return response_base.success(data=environment.model_dump())
-    else:
+    """创建环境"""
+    try:
+        # 返回的是带 id 的对象，不是 bool！
+        new_env: EnvironmentModel = await EnvironmentManager.create_environment(environment)
+
+        # 返回生成 id 后的完整数据！！！
+        return response_base.success(data=new_env.model_dump())
+    except Exception as e:
         return response_base.fail()
 
 
@@ -79,12 +80,12 @@ async def list_environments(project_id: int = Query(..., description="项目ID")
 
 @router.get("/default/{project_id}", summary="获取默认环境")
 async def get_default_environment(
-        project_id : int = Path(..., description="项目ID")
+        project_id: int = Path(..., description="项目ID")
 ) -> ResponseModel | ResponseSchemaModel:
     """
     获取项目默认环境
     """
-    environment = await EnvironmentManager.get_default_environment(project_id )
+    environment = await EnvironmentManager.get_default_environment(project_id)
     if environment:
         return response_base.success(data=environment.model_dump())
     else:
