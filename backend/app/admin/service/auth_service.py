@@ -146,7 +146,6 @@ class AuthService:
                 log.error('登陆错误: 用户密码有误')
             task = BackgroundTask(
                 login_log_service.create,
-                db=db,
                 user_uuid=user.uuid if user else uuid4_str(),
                 username=obj.username,
                 login_time=timezone.now(),
@@ -160,7 +159,6 @@ class AuthService:
         else:
             background_tasks.add_task(
                 login_log_service.create,
-                db=db,
                 user_uuid=user.uuid,
                 username=obj.username,
                 login_time=timezone.now(),
@@ -266,7 +264,7 @@ class AuthService:
         await redis_client.delete(f'{settings.TOKEN_REDIS_PREFIX}:{user_id}:{session_uuid}')
         await redis_client.delete(f'{settings.TOKEN_EXTRA_INFO_REDIS_PREFIX}:{user_id}:{session_uuid}')
         if refresh_token:
-            await redis_client.delete(f'{settings.TOKEN_REFRESH_REDIS_PREFIX}:{user_id}:{refresh_token}')
+            await redis_client.delete(f'{settings.TOKEN_REFRESH_REDIS_PREFIX}:{user_id}:{session_uuid}')
 
 
 auth_service: AuthService = AuthService()

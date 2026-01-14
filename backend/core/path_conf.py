@@ -3,6 +3,12 @@ from pathlib import Path
 # 项目根目录
 BASE_PATH = Path(__file__).resolve().parent.parent
 
+# 环境变量文件
+ENV_FILE_PATH = BASE_PATH / '.env'
+
+# 环境变量示例文件
+ENV_EXAMPLE_FILE_PATH = BASE_PATH / '.env.example'
+
 # alembic 迁移文件存放路径
 ALEMBIC_VERSION_DIR = BASE_PATH / 'alembic' / 'versions'
 
@@ -19,4 +25,10 @@ UPLOAD_DIR = STATIC_DIR / 'upload'
 PLUGIN_DIR = BASE_PATH / 'plugin'
 
 # 国际化文件目录
-LOCALE_DIR = BASE_PATH / 'locale'
+LOCALE_DIR = BASE_PATH / 'locale' / 'langs'
+
+# MySQL 脚本目录
+MYSQL_SCRIPT_DIR = BASE_PATH / 'sql' / 'mysql'
+
+# PostgreSQL 脚本目录
+POSTGRESQL_SCRIPT_DIR = BASE_PATH / 'sql' / 'postgresql'
