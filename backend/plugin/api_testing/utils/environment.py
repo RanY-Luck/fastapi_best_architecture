@@ -735,7 +735,12 @@ class EnvironmentManager:
             return False
 
     @classmethod
-    async def list_environments(cls, project_id: int) -> List[EnvironmentModel]:
+    async def list_environments(
+            cls,
+            project_id: Optional[int] = None,
+            name: Optional[str] = None,
+            status: Optional[int] = None
+    ) -> List[EnvironmentModel]:
         try:
             pattern = f"{cls.REDIS_KEY_PREFIX}*"
             environments = []
@@ -748,13 +753,24 @@ class EnvironmentManager:
                         continue
                     try:
                         env = EnvironmentModel.model_validate_json(data)
-                        if env.project_id == project_id:
-                            environments.append(env)
+
+                        if project_id is not None and env.project_id != project_id:
+                            continue
+
+                        if status is not None and env.status != status:
+                            continue
+
+                        if name is not None and name not in env.name:
+                            continue
+
+                        environments.append(env)
                     except Exception as parse_e:
                         continue
                 if cursor == 0:
                     break
 
+            # 可选：按ID倒序排列，让新创建的排前面
+            environments.sort(key=lambda x: x.id, reverse=True)
             return environments
         except Exception as e:
             log.error(f"获取环境列表失败: {e}")
@@ -819,4 +835,3 @@ class EnvironmentManager:
                 # 设置指定环境为默认
                 env.is_default = True
                 await cls.update_environment(env)
-
