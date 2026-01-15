@@ -56,10 +56,6 @@ async def update_environment(
 
     success = await EnvironmentManager.update_environment(environment)
     if success:
-        # 方案 A：简单返回（当前做法）
-        # return response_base.success(data=environment.model_dump())
-
-        # 方案 B (更严谨)：重新获取一次最新数据
         updated_env = await EnvironmentManager.get_environment(environment_id)
         return response_base.success(data=updated_env.model_dump())
     else:
@@ -80,9 +76,9 @@ async def delete_environment(environment_id: int = Path(description="环境ID"))
 
 @router.get("", summary="获取环境列表")
 async def list_environments(
-    project_id: Optional[int] = Query(None, description="项目ID"),
-    name: Optional[str] = Query(None, description="环境名称"),
-    status: Optional[int] = Query(None, description="环境状态")
+        project_id: Optional[int] = Query(None, description="项目ID"),
+        name: Optional[str] = Query(None, description="环境名称"),
+        status: Optional[int] = Query(None, description="环境状态")
 ) -> ResponseModel | ResponseSchemaModel:
     """
     获取环境列表（支持按项目ID、名称、状态筛选）
