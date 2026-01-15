@@ -5,13 +5,12 @@
 提供类似APIFox的环境变量管理功能
 """
 import json
-import os
 import re
 from enum import Enum, IntEnum
-from typing import Any, Dict, List, Optional, Set, Union, Tuple
+from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
 from backend.common.log import log
-from backend.core.path_conf import PLUGIN_DIR
+from datetime import datetime
 from backend.database.redis import redis_client
 
 
@@ -54,6 +53,17 @@ class EnvironmentModel(BaseModel):
         description="环境状态: 0-停用, 1-启用"
     )
     variables: Dict[str, Any] = Field(default_factory=dict)  # 环境变量,支持任意键值对
+
+    created_time: datetime = Field(
+        default_factory=datetime.now,
+        description="创建时间"
+    )
+
+    # 更新时间：默认为空，表示从未修改过
+    updated_time: Optional[datetime] = Field(
+        default=None,
+        description="更新时间"
+    )
 
 
 class VariableManager:
@@ -680,18 +690,22 @@ class EnvironmentManager:
     async def update_environment(cls, environment: EnvironmentModel) -> bool:
         """
         更新环境
-
-        :param environment: 环境信息
-        :return: 是否成功
         """
         try:
-            # 构建Redis键
-            key = cls._build_environment_key(environment)
+            key = cls._build_environment_key(environment.id)
 
             # 检查环境是否存在
             exists = await redis_client.exists(key)
             if not exists:
+                log.warning(f"更新环境失败: Redis中不存在key={key}")
                 return False
+
+            old_data = await redis_client.get(key)
+            if old_data:
+                old_env = EnvironmentModel.model_validate_json(old_data)
+                environment.created_time = old_env.created_time
+
+            environment.updated_time = datetime.now()
 
             # 存储环境信息
             await redis_client.set(key, environment.model_dump_json())

@@ -20,9 +20,15 @@ async def create_environment(environment: EnvironmentModel) -> ResponseModel | R
     创建环境
     """
     try:
+        # 强制清除 ID，防止前端误传
+        environment.id = None
+        # 强制清除更新时间，确保由 Manager 处理初始状态
+        environment.updated_time = None
+
         new_env: EnvironmentModel = await EnvironmentManager.create_environment(environment)
         return response_base.success(data=new_env.model_dump())
     except Exception as e:
+        # 建议记录日志 e
         return response_base.fail()
 
 
@@ -46,12 +52,16 @@ async def update_environment(
     """
     更新环境信息
     """
-    # 确保路径参数和请求体ID一致
-    if environment.id != environment_id:
-        return response_base.fail()
+    environment.id = environment_id
+
     success = await EnvironmentManager.update_environment(environment)
     if success:
-        return response_base.success(data=environment.model_dump())
+        # 方案 A：简单返回（当前做法）
+        # return response_base.success(data=environment.model_dump())
+
+        # 方案 B (更严谨)：重新获取一次最新数据
+        updated_env = await EnvironmentManager.get_environment(environment_id)
+        return response_base.success(data=updated_env.model_dump())
     else:
         return response_base.fail()
 
