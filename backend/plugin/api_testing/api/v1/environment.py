@@ -107,8 +107,8 @@ async def get_default_environment(
 
 @router.put("/{environment_id}/default", summary="设置默认环境")
 async def set_default_environment(
-        project_id: int = Query(description="项目ID"),
-        environment_id: int = Path(description="环境ID")
+        project_id: int = Query(..., description="项目ID"),
+        environment_id: int = Path(..., description="环境ID"),  # 建议加上 ... 表示必填) -> ResponseModel | ResponseSchemaModel:
 ) -> ResponseModel | ResponseSchemaModel:
     """
     设置项目默认环境

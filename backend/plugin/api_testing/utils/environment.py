@@ -611,42 +611,31 @@ class EnvironmentManager:
             raise
 
     @classmethod
-    async def set_default_environment(cls, project_id: int, environment_id: int) -> None:
+    async def set_default_environment(cls, project_id: int, environment_id: int) -> bool:
         """
-        设置某个环境为项目的默认环境（一个项目同时只有一个默认环境）
-        :param project_id: 项目ID
-        :param environment_id: 要设为默认的环境ID
+        设置某个环境为项目的默认环境
+        :return: 是否成功 (bool)
         """
         try:
-            # Redis key：项目默认环境ID
+            old_default_id = await cls.get_default_environment_id(project_id)
+            # 更新 Redis 中的默认环境指向
             default_key = f"api_testing:project:{project_id}:default_env"
-
-            # 直接设置（覆盖旧值）
             await redis_client.set(default_key, environment_id)
+            # 更新数据库/对象层面的 is_default 标记
+            # 如果存在旧的默认环境，且不是当前环境，将其设为 False
+            if old_default_id and old_default_id != environment_id:
+                await cls._update_environment_is_default(old_default_id, False)
 
-            # 可选：设置合理过期时间（如果项目长期不活跃可自动清理）
-            # await redis_client.expire(default_key, 2592000)  # 30天
+            # 将新的环境设为 True
+            await cls._update_environment_is_default(environment_id, True)
 
-            # 可选：同时更新该环境的 is_default 字段（保持数据一致性）
-            # 如果你希望缓存中所有环境对象的 is_default 都实时准确，可以这么做：
-            env_key = cls._build_environment_key(environment_id)
-            env_data = await redis_client.get(env_key)
-            if env_data:
-                env_model = EnvironmentModel.model_validate_json(env_data)
-                # 先把旧默认环境（如果存在）的 is_default 设为 False
-                old_default_id = await cls.get_default_environment_id(project_id)
-                if old_default_id and old_default_id != environment_id:
-                    await cls._update_environment_is_default(old_default_id, False)
-
-                # 把新默认环境设为 True
-                updated_env = env_model.model_copy(update={"is_default": True})
-                await redis_client.set(env_key, updated_env.model_dump_json())
-
+            return True
         except Exception as e:
             log.error(f"设置默认环境失败 project_id={project_id} env_id={environment_id}: {e}")
-            raise
+            return False
 
-    # 辅助方法：获取项目的默认环境ID
+            # 辅助方法：获取项目的默认环境ID
+
     @classmethod
     async def get_default_environment_id(cls, project_id: int) -> Optional[int]:
         default_key = f"api_testing:project:{project_id}:default_env"
