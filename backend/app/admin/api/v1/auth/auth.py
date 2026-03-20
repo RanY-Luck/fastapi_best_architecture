@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request, Response
 from fastapi.security import HTTPBasicCredentials
-from fastapi_limiter.depends import RateLimiter
+from pyrate_limiter import Duration, Rate
 from starlette.background import BackgroundTasks
 
 from backend.app.admin.schema.token import GetLoginToken, GetNewToken, GetSwaggerToken
@@ -11,6 +11,7 @@ from backend.app.admin.service.auth_service import auth_service
 from backend.common.response.response_schema import ResponseModel, ResponseSchemaModel, response_base
 from backend.common.security.jwt import DependsJwtAuth
 from backend.database.db import CurrentSession, CurrentSessionTransaction
+from backend.utils.limiter import RateLimiter
 
 router = APIRouter()
 
@@ -27,7 +28,7 @@ async def login_swagger(
     '/login',
     summary='用户登录',
     description='json 格式登录, 仅支持在第三方api工具调试, 例如: postman',
-    dependencies=[Depends(RateLimiter(times=5, minutes=1))],
+    dependencies=[Depends(RateLimiter(Rate(5, Duration.MINUTE)))],
 )
 async def login(
     db: CurrentSessionTransaction,
@@ -46,8 +47,8 @@ async def get_codes(db: CurrentSession, request: Request) -> ResponseSchemaModel
 
 
 @router.post('/refresh', summary='刷新 token')
-async def refresh_token(db: CurrentSession, request: Request) -> ResponseSchemaModel[GetNewToken]:
-    data = await auth_service.refresh_token(db=db, request=request)
+async def refresh_token(db: CurrentSession, request: Request, response: Response) -> ResponseSchemaModel[GetNewToken]:
+    data = await auth_service.refresh_token(db=db, request=request, response=response)
     return response_base.success(data=data)
 
 

@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.admin.model import User
 from backend.app.admin.schema.user import GetUserInfoWithRelationDetail
+from backend.common.context import ctx
 from backend.common.dataclasses import AccessToken, NewToken, RefreshToken, TokenPayload
 from backend.common.exception import errors
 from backend.core.conf import settings
@@ -58,7 +59,7 @@ def jwt_decode(token: str) -> TokenPayload:
     except (JWTError, Exception):
         raise errors.TokenError(msg='Token 无效')
     return TokenPayload(
-        id=int(user_id),
+        user_id=int(user_id),
         session_uuid=session_uuid,
         expire_time=timezone.from_datetime(timezone.to_utc(expire)),
     )
@@ -205,7 +206,7 @@ async def get_current_user(db: AsyncSession, pk: int) -> User:
         raise errors.TokenError(msg='Token 无效')
     if not user.status:
         raise errors.AuthorizationError(msg='用户已被锁定，请联系系统管理员')
-    if user.dept_id:
+    if user.dept and user.dept_id:
         if not user.dept.status:
             raise errors.AuthorizationError(msg='用户所属部门已被锁定，请联系系统管理员')
         if user.dept.del_flag:
@@ -217,36 +218,13 @@ async def get_current_user(db: AsyncSession, pk: int) -> User:
     return user
 
 
-def superuser_verify(request: Request, _token: str = DependsJwtAuth) -> bool:
+async def get_jwt_user(user_id: int) -> GetUserInfoWithRelationDetail:
     """
-    验证当前用户超级管理员权限
+    获取 JWT 用户
 
-    :param request: FastAPI 请求对象
-    :param _token: JWT 令牌
+    :param user_id:
     :return:
     """
-    superuser = request.user.is_superuser
-    if not superuser or not request.user.is_staff:
-        raise errors.AuthorizationError
-    return superuser
-
-
-async def jwt_authentication(token: str) -> GetUserInfoWithRelationDetail:
-    """
-    JWT 认证
-
-    :param token: JWT token
-    :return:
-    """
-    token_payload = jwt_decode(token)
-    user_id = token_payload.id
-    redis_token = await redis_client.get(f'{settings.TOKEN_REDIS_PREFIX}:{user_id}:{token_payload.session_uuid}')
-    if not redis_token:
-        raise errors.TokenError(msg='Token 已过期')
-
-    if token != redis_token:
-        raise errors.TokenError(msg='Token 已失效')
-
     cache_user = await redis_client.get(f'{settings.JWT_USER_REDIS_PREFIX}:{user_id}')
     if not cache_user:
         async with async_db_session() as db:
@@ -262,6 +240,39 @@ async def jwt_authentication(token: str) -> GetUserInfoWithRelationDetail:
         # https://docs.pydantic.dev/latest/concepts/json/#partial-json-parsing
         user = GetUserInfoWithRelationDetail.model_validate(from_json(cache_user, allow_partial=True))
     return user
+
+
+async def jwt_authentication(token: str) -> GetUserInfoWithRelationDetail:
+    """
+    JWT 认证
+
+    :param token: JWT token
+    :return:
+    """
+    token_payload = jwt_decode(token)
+    ctx.user_id = token_payload.user_id
+    redis_token = await redis_client.get(f'{settings.TOKEN_REDIS_PREFIX}:{ctx.user_id}:{token_payload.session_uuid}')
+    if not redis_token:
+        raise errors.TokenError(msg='Token 已过期')
+
+    if token != redis_token:
+        raise errors.TokenError(msg='Token 已失效')
+
+    return await get_jwt_user(ctx.user_id)
+
+
+def superuser_verify(request: Request, _token: str = DependsJwtAuth) -> bool:
+    """
+    验证当前用户超级管理员权限
+
+    :param request: FastAPI 请求对象
+    :param _token: JWT 令牌
+    :return:
+    """
+    superuser = request.user.is_superuser
+    if not superuser or not request.user.is_staff:
+        raise errors.AuthorizationError
+    return superuser
 
 
 # 超级管理员鉴权依赖注入

@@ -93,7 +93,7 @@ class OperaLogCipherType(IntEnum):
     aes = 0
     md5 = 1
     itsdangerous = 2
-    plan = 3
+    plain = 3
 
 
 class StatusType(IntEnum):
@@ -108,6 +108,13 @@ class FileType(StrEnum):
 
     image = 'image'
     video = 'video'
+
+
+class PluginLevelType(StrEnum):
+    """插件级别类型"""
+
+    app = 'app'
+    extend = 'extend'
 
 
 class PluginType(StrEnum):

@@ -10,26 +10,41 @@ import rtoml
 
 from fastapi import APIRouter, Depends, Request
 
-from backend.common.enums import DataBaseType, PrimaryKeyType, StatusType
+from backend.common.enums import DataBaseType, PluginLevelType, PrimaryKeyType, StatusType
 from backend.common.exception import errors
 from backend.common.log import log
 from backend.core.conf import settings
 from backend.core.path_conf import PLUGIN_DIR
 from backend.database.redis import RedisCli, redis_client
+from backend.plugin.errors import PluginConfigError, PluginInjectError
+from backend.plugin.validator import validate_plugin_config
 from backend.utils.async_helper import run_await
 from backend.utils.dynamic_import import get_model_objects, import_module_cached
 
 
-class PluginConfigError(Exception):
-    """插件信息错误"""
+def check_plugin_installed(plugin_name: str) -> bool:
+    """
+    检查插件是否已安装
+
+    :param plugin_name: 插件名称
+    :return:
+    """
+    return (PLUGIN_DIR / plugin_name / '__init__.py').exists()
 
 
-class PluginInjectError(Exception):
-    """插件注入错误"""
+def check_required_plugins() -> None:
+    """检查必需插件"""
+    required_plugins = list(settings.PLUGIN_REQUIRED)
+    if not settings.RBAC_ROLE_MENU_MODE and 'casbin_rbac' not in required_plugins:
+        required_plugins.append('casbin_rbac')
+
+    missing_plugins = [name for name in required_plugins if not check_plugin_installed(name)]
+    if missing_plugins:
+        raise PluginInjectError(f'当前系统缺少以下插件: {", ".join(missing_plugins)}，请先安装对应插件')
 
 
-@lru_cache
-def get_plugins() -> list[str]:
+@lru_cache(maxsize=128)
+def get_plugins() -> tuple[str, ...]:
     """获取插件列表"""
     plugin_packages = []
 
@@ -43,7 +58,7 @@ def get_plugins() -> list[str]:
         if os.path.isdir(item_path) and '__init__.py' in os.listdir(item_path):
             plugin_packages.append(item)
 
-    return plugin_packages
+    return tuple(plugin_packages)
 
 
 def get_plugin_models() -> list[object]:
@@ -59,6 +74,20 @@ def get_plugin_models() -> list[object]:
     return objs
 
 
+def build_sql_filename(
+    prefix: str,
+    pk_type: PrimaryKeyType,
+    *,
+    suffix: str | None = None,
+) -> str:
+    parts = [prefix]
+    if pk_type == PrimaryKeyType.snowflake:
+        parts.append('snowflake')
+    if suffix:
+        parts.append(suffix)
+    return f'{"_".join(parts)}.sql'
+
+
 async def get_plugin_sql(plugin: str, db_type: DataBaseType, pk_type: PrimaryKeyType) -> str | None:
     """
     获取插件 SQL 脚本
@@ -68,24 +97,24 @@ async def get_plugin_sql(plugin: str, db_type: DataBaseType, pk_type: PrimaryKey
     :param pk_type: 主键类型
     :return:
     """
-    if db_type == DataBaseType.mysql:
-        mysql_dir = PLUGIN_DIR / plugin / 'sql' / 'mysql'
-        sql_file = (
-            mysql_dir / 'init.sql' if pk_type == PrimaryKeyType.autoincrement else mysql_dir / 'init_snowflake.sql'
-        )
-    else:
-        postgresql_dir = PLUGIN_DIR / plugin / 'sql' / 'postgresql'
-        sql_file = (
-            postgresql_dir / 'init.sql'
-            if pk_type == PrimaryKeyType.autoincrement
-            else postgresql_dir / 'init_snowflake.sql'
-        )
+    sql_dir = PLUGIN_DIR / plugin / 'sql' / ('mysql' if db_type == DataBaseType.mysql else 'postgresql')
+    default_filename = build_sql_filename('init', pk_type)
+    default_sql_file = sql_dir / default_filename
+    return str(default_sql_file) if await anyio.Path(default_sql_file).exists() else None
 
-    path = anyio.Path(sql_file)
-    if not await path.exists():
-        return None
 
-    return sql_file
+async def get_plugin_destroy_sql(plugin: str, db_type: DataBaseType, pk_type: PrimaryKeyType) -> str | None:
+    """
+    获取插件销毁 SQL 脚本
+
+    :param plugin: 插件名称
+    :param db_type: 数据库类型
+    :param pk_type: 主键类型
+    :return:
+    """
+    sql_dir = PLUGIN_DIR / plugin / 'sql' / ('mysql' if db_type == DataBaseType.mysql else 'postgresql')
+    sql_file = sql_dir / build_sql_filename('destroy', pk_type)
+    return str(sql_file) if await anyio.Path(sql_file).exists() else None
 
 
 def load_plugin_config(plugin: str) -> dict[str, Any]:
@@ -105,14 +134,14 @@ def load_plugin_config(plugin: str) -> dict[str, Any]:
 
 def parse_plugin_config() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """解析插件配置"""
-
     extend_plugins = []
     app_plugins = []
 
     plugins = get_plugins()
 
-    # 使用独立单例，避免与主线程冲突
+    # 使用独立连接
     current_redis_client = RedisCli()
+    run_await(current_redis_client.init)()
 
     # 清理未知插件信息
     run_await(current_redis_client.delete_prefix)(
@@ -122,32 +151,23 @@ def parse_plugin_config() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
 
     for plugin in plugins:
         data = load_plugin_config(plugin)
+        plugin_type = validate_plugin_config(plugin, data)
 
-        plugin_info = data.get('plugin')
-        if not plugin_info:
-            raise PluginConfigError(f'插件 {plugin} 配置文件缺少 plugin 配置')
-
-        required_fields = ['summary', 'version', 'description', 'author']
-        missing_fields = [field for field in required_fields if field not in plugin_info]
-        if missing_fields:
-            raise PluginConfigError(f'插件 {plugin} 配置文件缺少必要字段: {", ".join(missing_fields)}')
-
-        if data.get('api'):
-            if not data.get('app', {}).get('extend'):
-                raise PluginConfigError(f'扩展级插件 {plugin} 配置文件缺少 app.extend 配置')
+        if plugin_type == PluginLevelType.extend:
             extend_plugins.append(data)
         else:
-            if not data.get('app', {}).get('router'):
-                raise PluginConfigError(f'应用级插件 {plugin} 配置文件缺少 app.router 配置')
             app_plugins.append(data)
 
         # 补充插件信息
+        data['plugin']['name'] = plugin
         plugin_cache_info = run_await(current_redis_client.get)(f'{settings.PLUGIN_REDIS_PREFIX}:{plugin}')
         if plugin_cache_info:
-            data['plugin']['enable'] = json.loads(plugin_cache_info)['plugin']['enable']
+            try:
+                data['plugin']['enable'] = json.loads(plugin_cache_info)['plugin']['enable']
+            except Exception:
+                data['plugin']['enable'] = str(StatusType.enable.value)
         else:
             data['plugin']['enable'] = str(StatusType.enable.value)
-        data['plugin']['name'] = plugin
 
         # 缓存最新插件信息
         run_await(current_redis_client.set)(
@@ -293,5 +313,10 @@ class PluginStatusChecker:
             log.error('插件状态未初始化或丢失，需重启服务自动修复')
             raise PluginInjectError('插件状态未初始化或丢失，请联系系统管理员')
 
-        if not int(json.loads(plugin_info)['plugin']['enable']):
+        try:
+            is_enabled = int(json.loads(plugin_info)['plugin']['enable'])
+        except Exception:
+            is_enabled = 0
+
+        if not is_enabled:
             raise errors.ServerError(msg=f'插件 {self.plugin} 未启用，请联系系统管理员')

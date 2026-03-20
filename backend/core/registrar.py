@@ -7,7 +7,6 @@ from contextlib import asynccontextmanager
 import socketio
 
 from fastapi import Depends, FastAPI
-from fastapi_limiter import FastAPILimiter
 from fastapi_pagination import add_pagination
 from prometheus_client import make_asgi_app
 from starlette.middleware.authentication import AuthenticationMiddleware
@@ -17,8 +16,10 @@ from starlette_context.middleware import ContextMiddleware
 from starlette_context.plugins import RequestIdPlugin
 
 from backend import __version__
+from backend.common.cache.pubsub import cache_pubsub_manager
 from backend.common.exception.exception_handler import register_exception
 from backend.common.log import set_custom_logfile, setup_logging
+from backend.common.observability.otel import init_otel
 from backend.common.response.response_code import StandardResponseCode
 from backend.core.conf import settings
 from backend.core.path_conf import STATIC_DIR, UPLOAD_DIR
@@ -31,9 +32,7 @@ from backend.middleware.opera_log_middleware import OperaLogMiddleware
 from backend.middleware.state_middleware import StateMiddleware
 from backend.plugin.core import build_final_router
 from backend.utils.demo_mode import demo_site
-from backend.utils.limiter import http_limit_callback
 from backend.utils.openapi import ensure_unique_route_names, simplify_operation_ids
-from backend.utils.otel import init_otel
 from backend.utils.serializers import MsgSpecJSONResponse
 from backend.utils.snowflake import snowflake
 from backend.utils.trace_id import OtelTraceIdPlugin
@@ -51,14 +50,7 @@ async def register_init(app: FastAPI) -> AsyncGenerator[None, None]:
     await create_tables()
 
     # 初始化 redis
-    await redis_client.open()
-
-    # 初始化 limiter
-    await FastAPILimiter.init(
-        redis=redis_client,
-        prefix=settings.REQUEST_LIMITER_REDIS_PREFIX,
-        http_callback=http_limit_callback,
-    )
+    await redis_client.init()
 
     # 初始化 snowflake 节点
     await snowflake.init()
@@ -66,7 +58,13 @@ async def register_init(app: FastAPI) -> AsyncGenerator[None, None]:
     # 创建操作日志任务
     create_task(OperaLogMiddleware.consumer())
 
+    # 启动缓存 Pub/Sub 监听器
+    cache_pubsub_manager.start_listener()
+
     yield
+
+    # 停止缓存 Pub/Sub 监听器
+    await cache_pubsub_manager.stop_listener()
 
     # 释放 snowflake 节点
     await snowflake.shutdown()
@@ -98,7 +96,7 @@ def register_app() -> FastAPI:
     register_page(app)
     register_exception(app)
 
-    if settings.GRAFANA_METRICS:
+    if settings.GRAFANA_METRICS_ENABLE:
         register_metrics(app)
 
     return app
@@ -154,7 +152,7 @@ def register_middleware(app: FastAPI) -> None:
     app.add_middleware(AccessMiddleware)
 
     # ContextVar
-    plugins = [OtelTraceIdPlugin()] if settings.GRAFANA_METRICS else [RequestIdPlugin(validate=True)]
+    plugins = [OtelTraceIdPlugin()] if settings.GRAFANA_METRICS_ENABLE else [RequestIdPlugin(validate=True)]
     app.add_middleware(
         ContextMiddleware,
         plugins=plugins,
@@ -165,7 +163,7 @@ def register_middleware(app: FastAPI) -> None:
     )
 
     # CORS
-    # https://github.com/fastapi-practices/fastapi_best_architecture/pull/789/changes
+    # https://github.com/fastapi-practices/fastapi-best-architecture/pull/789/changes
     # https://github.com/open-telemetry/opentelemetry-python-contrib/issues/4031
     if settings.MIDDLEWARE_CORS:
         app.add_middleware(

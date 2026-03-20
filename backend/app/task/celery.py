@@ -4,10 +4,23 @@ import urllib.parse
 import celery
 import celery_aio_pool
 
+from celery.signals import worker_process_init
+from opentelemetry.instrumentation.celery import CeleryInstrumentor
+
 from backend.app.task.tasks.beat import LOCAL_BEAT_SCHEDULE
 from backend.common.enums import DataBaseType
+from backend.common.observability.otel import init_resource, init_tracer
 from backend.core.conf import settings
 from backend.core.path_conf import BASE_PATH
+
+
+@worker_process_init.connect(weak=False)
+def init_celery_worker_tracing(*args, **kwargs) -> None:
+    """初始化 Celery 追踪"""
+    if settings.GRAFANA_METRICS_ENABLE:
+        resource = init_resource('fba_celery_worker')
+        init_tracer(resource)
+        CeleryInstrumentor().instrument()
 
 
 def find_task_packages() -> list[str]:
@@ -24,7 +37,7 @@ def init_celery() -> celery.Celery:
     """初始化 Celery 应用"""
 
     # TODO: Update this work if celery version >= 6.0.0
-    # https://github.com/fastapi-practices/fastapi_best_architecture/issues/321
+    # https://github.com/fastapi-practices/fastapi-best-architecture/issues/321
     # https://github.com/celery/celery/issues/7874
     celery.app.trace.build_tracer = celery_aio_pool.build_async_tracer
     celery.app.trace.reset_worker_optimizations()
