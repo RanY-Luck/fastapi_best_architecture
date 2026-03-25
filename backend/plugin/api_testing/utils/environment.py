@@ -33,6 +33,7 @@ class VariableModel(BaseModel):
     project_id: Optional[int] = None  # 项目ID，仅当scope=PROJECT时需要
     case_id: Optional[int] = None  # 用例ID，仅当scope=CASE时需要
     is_encrypted: bool = False  # 是否加密存储
+    created_time: datetime = Field(default_factory=datetime.now, description="创建时间")
 
 
 class EnvironmentStatus(IntEnum):
@@ -83,6 +84,11 @@ class VariableManager:
         try:
             # 构建Redis键
             key = cls._build_variable_key(variable)
+
+            existing_data = await redis_client.get(key)
+            if existing_data:
+                existing_variable = VariableModel.model_validate_json(existing_data)
+                variable.created_time = existing_variable.created_time
 
             # 加密敏感数据
             if variable.is_encrypted:
@@ -583,16 +589,17 @@ class EnvironmentManager:
     # Redis键前缀
     REDIS_KEY_PREFIX = "api_testing:environment:"
     REDIS_ID_COUNTER = "api_testing:environment:id_counte"  # 自增计数器
+    REDIS_DEFAULT_ENV_KEY_PREFIX = "api_testing:project:"
 
     @classmethod
     def _build_environment_key(cls, environment_id: int) -> str:
-        """
-        构建环境Redis键
-
-        :param environment: 环境信息
-        :return: Redis键
-        """
+        """构建环境Redis键。"""
         return f"{cls.REDIS_KEY_PREFIX}{environment_id}"
+
+    @classmethod
+    def _build_default_environment_key(cls, project_id: int) -> str:
+        """构建项目默认环境Redis键。"""
+        return f"{cls.REDIS_DEFAULT_ENV_KEY_PREFIX}{project_id}:default_env"
 
     @classmethod
     async def create_environment(cls, environment: EnvironmentModel) -> EnvironmentModel:
@@ -619,7 +626,7 @@ class EnvironmentManager:
         try:
             old_default_id = await cls.get_default_environment_id(project_id)
             # 更新 Redis 中的默认环境指向
-            default_key = f"api_testing:project:{project_id}:default_env"
+            default_key = cls._build_default_environment_key(project_id)
             await redis_client.set(default_key, environment_id)
             # 更新数据库/对象层面的 is_default 标记
             # 如果存在旧的默认环境，且不是当前环境，将其设为 False
@@ -638,7 +645,7 @@ class EnvironmentManager:
 
     @classmethod
     async def get_default_environment_id(cls, project_id: int) -> Optional[int]:
-        default_key = f"api_testing:project:{project_id}:default_env"
+        default_key = cls._build_default_environment_key(project_id)
         result = await redis_client.get(default_key)
         return int(result) if result else None
 
@@ -723,7 +730,7 @@ class EnvironmentManager:
                 return False
 
             # 构建Redis键
-            key = cls._build_environment_key(environment)
+            key = cls._build_environment_key(environment_id)
 
             # 删除环境信息
             await redis_client.delete(key)
@@ -767,12 +774,11 @@ class EnvironmentManager:
                             continue
 
                         environments.append(env)
-                    except Exception as parse_e:
+                    except Exception:
                         continue
                 if cursor == 0:
                     break
 
-            # 可选：按ID倒序排列，让新创建的排前面
             environments.sort(key=lambda x: x.id, reverse=True)
             return environments
         except Exception as e:
@@ -788,9 +794,7 @@ class EnvironmentManager:
         :return: 默认环境信息
         """
         try:
-            # 构建Redis键
-            key = f"{cls.REDIS_KEY_PREFIX}default:{project_id}"
-            # 获取默认环境ID
+            key = cls._build_default_environment_key(project_id)
             environment_id = await redis_client.get(key)
             if not environment_id:
                 return None
@@ -809,8 +813,7 @@ class EnvironmentManager:
         :return: 是否成功
         """
         try:
-            # 构建Redis键
-            key = f"{cls.REDIS_KEY_PREFIX}default:{project_id}"
+            key = cls._build_default_environment_key(project_id)
 
             # 删除默认环境记录
             await redis_client.delete(key)

@@ -130,14 +130,25 @@ class TestStepService:
             return result.rowcount > 0
 
     @staticmethod
-    async def get_test_step_count(test_case_id: Optional[int] = None) -> int:
+    async def get_test_step_count(
+            test_case_id: Optional[int] = None,
+            name: Optional[str] = None,
+            method: Optional[str] = None,
+            status: Optional[int] = None,
+    ) -> int:
         """获取测试步骤总数"""
         async with async_db_session() as db:
-            query = select(ApiTestStep)
-            if test_case_id:
+            query = select(func.count(ApiTestStep.id))
+            if test_case_id is not None:
                 query = query.where(ApiTestStep.test_case_id == test_case_id)
+            if name is not None and name.strip():
+                query = query.where(ApiTestStep.name.ilike(f"%{name}%"))
+            if method:
+                query = query.where(ApiTestStep.method == method)
+            if status is not None:
+                query = query.where(ApiTestStep.status == status)
             result = await db.execute(query)
-            return len(result.scalars().all())
+            return result.scalar()
 
     @staticmethod
     async def reorder_steps(test_case_id: int, step_orders: List[dict]) -> bool:

@@ -65,6 +65,31 @@ class HistoryManager:
     _loaded_from_disk = False
 
     @classmethod
+    async def count_history(
+            cls,
+            project_id: Optional[str] = None,
+            start_time: Optional[datetime.datetime] = None,
+            end_time: Optional[datetime.datetime] = None,
+            url_contains: Optional[str] = None,
+            method: Optional[str] = None,
+            tags: Optional[List[str]] = None,
+            successful: Optional[bool] = None
+    ) -> int:
+        """获取符合条件的历史记录总数"""
+        histories = await cls.get_history_list(
+            project_id=project_id,
+            limit=0,
+            skip=0,
+            start_time=start_time,
+            end_time=end_time,
+            url_contains=url_contains,
+            method=method,
+            tags=tags,
+            successful=successful
+        )
+        return len(histories)
+
+    @classmethod
     async def add_history(cls, history: RequestHistoryItem) -> str:
         """
         添加历史记录

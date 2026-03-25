@@ -116,11 +116,10 @@ class DataDriverManager:
             elif config.type == DataSourceType.PARAMETER:
                 return cls._load_parameter_data(config)
             else:
-                log.error(f"不支持的数据源类型: {config.type}")
-                return []
+                raise ValueError(f"不支持的数据源类型: {config.type}")
         except Exception as e:
             log.error(f"加载数据源失败: {e}")
-            return []
+            raise
     
     @classmethod
     async def prepare_iterations(cls, config: DataDrivenConfig) -> List[TestIteration]:
@@ -134,20 +133,20 @@ class DataDriverManager:
             # 如果已有迭代数据，则直接返回
             if config.iterations:
                 return config.iterations
-                
+
             # 如果没有数据源配置，则返回空列表
             if not config.data_source:
                 return []
-                
+
             # 加载数据源
             data_list = await cls.load_data_source(config.data_source)
             if not data_list:
                 return []
-                
+
             # 限制迭代次数
             if config.max_iterations and len(data_list) > config.max_iterations:
                 data_list = data_list[:config.max_iterations]
-                
+
             # 生成迭代数据
             iterations = []
             for index, data in enumerate(data_list):
@@ -159,7 +158,7 @@ class DataDriverManager:
                     else:
                         # 如果数据中没有对应的参数，则使用默认值
                         parameters[param.name] = param.value
-                        
+
                 # 创建迭代数据
                 iteration = TestIteration(
                     id=f"iter_{index + 1}",
@@ -167,11 +166,11 @@ class DataDriverManager:
                     description=f"Iteration {index + 1}"
                 )
                 iterations.append(iteration)
-                
+
             return iterations
         except Exception as e:
             log.error(f"准备测试迭代数据失败: {e}")
-            return []
+            raise
     
     @staticmethod
     def _load_csv_data(config: DataSourceConfig) -> List[Dict[str, Any]]:

@@ -68,13 +68,19 @@ class TestCaseService:
             result = await db.execute(query)
             return result.scalars().all()
 
-    async def get_test_case_count(name: str = None, status: int = None) -> int:
-        """获取项目总数"""
+    async def get_test_case_count(
+            project_id: Optional[int] = None,
+            name: str = None,
+            status: int = None,
+    ) -> int:
+        """获取测试用例总数"""
         async with async_db_session() as db:
             query = select(func.count(ApiTestCase.id))
-            if name is not None:  # 修改：使用 is not None
+            if project_id is not None:
+                query = query.where(ApiTestCase.project_id == project_id)
+            if name is not None and name.strip():
                 query = query.where(ApiTestCase.name.ilike(f"%{name}%"))
-            if status is not None:  # 修改：使用 is not None
+            if status is not None:
                 query = query.where(ApiTestCase.status == status)
             result = await db.execute(query)
             return result.scalar()

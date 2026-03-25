@@ -110,7 +110,12 @@ async def get_test_steps(
             skip=skip,
             limit=limit
         )
-        total = await TestStepService.get_test_step_count(test_case_id=test_case_id)
+        total = await TestStepService.get_test_step_count(
+            test_case_id=test_case_id,
+            name=name,
+            method=method,
+            status=status,
+        )
 
         step_list = []
         for test_step in test_steps:

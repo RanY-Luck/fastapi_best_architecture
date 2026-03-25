@@ -104,13 +104,13 @@ class TestReportService:
             query = select(func.count(ApiTestReport.id))
 
             if test_case_id:
-                query = query.where(ApiTestReport.test_case_id == ApiTestCase.id)
+                query = query.where(ApiTestReport.test_case_id == test_case_id)
 
             if start_date:
-                query = query.where(ApiTestReport.created_time >= start_date)
+                query = query.where(ApiTestReport.start_time >= start_date)
 
             if end_date:
-                query = query.where(ApiTestReport.created_time <= end_date)
+                query = query.where(ApiTestReport.start_time <= end_date)
 
             if success_only is not None:
                 query = query.where(ApiTestReport.success == success_only)

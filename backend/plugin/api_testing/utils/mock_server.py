@@ -8,6 +8,7 @@ import asyncio
 import json
 import re
 import time
+from copy import deepcopy
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
@@ -164,15 +165,16 @@ class MockServer:
     async def create_project(cls, project: MockProject) -> bool:
         """
         创建Mock项目
-        
+
         :param project: 项目配置
         :return: 是否成功
         """
         try:
-            # 构建Redis键
             key = cls._build_project_key(project.id)
+            exists = await redis_client.exists(key)
+            if exists:
+                return False
 
-            # 存储项目配置
             await redis_client.set(key, project.model_dump_json())
             return True
         except Exception as e:
@@ -281,15 +283,20 @@ class MockServer:
     async def create_rule(cls, rule: MockRule) -> bool:
         """
         创建Mock规则
-        
+
         :param rule: 规则配置
         :return: 是否成功
         """
         try:
-            # 构建Redis键
-            key = cls._build_rule_key(rule)
+            project = await cls.get_project(rule.project_id)
+            if not project:
+                return False
 
-            # 存储规则配置
+            key = cls._build_rule_key(rule)
+            exists = await redis_client.exists(key)
+            if exists:
+                return False
+
             await redis_client.set(key, rule.model_dump_json())
             return True
         except Exception as e:
@@ -424,7 +431,7 @@ class MockServer:
         """
         try:
             # 获取请求路径和方法
-            path = request.url.path
+            path = cls._normalize_request_path(request.url.path)
             method = request.method
 
             # 获取项目配置
@@ -463,22 +470,24 @@ class MockServer:
             response_config = await cls._select_response(matched_rule, request)
             if not response_config:
                 return None
+            response_config = MockResponse.model_validate(deepcopy(response_config.model_dump()))
 
             # 应用延迟
             await cls._apply_delay(response_config.delay)
 
             # 执行脚本
+            processed_content = response_config.content
             if response_config.script.type != MockScriptType.NONE and response_config.script.content:
                 context = {
                     "request": request,
-                    "response_content": response_config.content,
+                    "response_content": processed_content,
                     "variables": {}
                 }
                 await cls._execute_script(response_config.script.content, context)
-                response_config.content = context["response_content"]
+                processed_content = str(context.get("response_content", processed_content))
 
             # 处理变量替换
-            processed_content = await VariableManager.process_template(response_config.content)
+            processed_content = await VariableManager.process_template(processed_content)
 
             # 构建响应
             response = await cls._build_response(response_config, processed_content)
@@ -556,25 +565,78 @@ class MockServer:
         return f"{MockServer.REDIS_KEY_PREFIX}rule:{project_id}:*"
 
     @staticmethod
+    def _normalize_request_path(path: str) -> str:
+        """规范化请求路径"""
+        normalized = (path or "/").strip()
+        if not normalized.startswith("/"):
+            normalized = f"/{normalized}"
+        if len(normalized) > 1:
+            normalized = normalized.rstrip("/")
+        return normalized or "/"
+
+    @staticmethod
+    def _extract_nested_value(data: Any, key_path: Optional[str]) -> tuple[bool, Any]:
+        """按点路径提取嵌套值"""
+        if not key_path:
+            return False, None
+
+        value = data
+        for key in key_path.split('.'):
+            if isinstance(value, dict) and key in value:
+                value = value[key]
+            else:
+                return False, None
+        return True, value
+
+    @staticmethod
+    async def _get_request_body_data(request: Request) -> Any:
+        """获取可用于条件匹配的请求体数据"""
+        body_bytes = await request.body()
+        if not body_bytes:
+            return None
+
+        try:
+            return json.loads(body_bytes)
+        except Exception:
+            return body_bytes.decode("utf-8", errors="ignore")
+
+    @staticmethod
+    def _is_condition_key_present(data: Any, key_path: Optional[str]) -> bool:
+        """判断条件键是否存在"""
+        found, _ = MockServer._extract_nested_value(data, key_path)
+        return found
+
+    @staticmethod
+    def _get_condition_actual_value(data: Any, key_path: Optional[str]) -> tuple[bool, Any]:
+        """获取条件实际值"""
+        if isinstance(data, dict):
+            return MockServer._extract_nested_value(data, key_path)
+        if key_path:
+            return False, None
+        return True, data
+
+    @staticmethod
+    def _normalize_rule_url(rule_url: str) -> str:
+        """规范化规则路径"""
+        return MockServer._normalize_request_path(rule_url)
+
+    @staticmethod
     def _match_url(rule_url: str, request_url: str) -> bool:
         """
         检查URL是否匹配
-        
+
         :param rule_url: 规则URL
         :param request_url: 请求URL
         :return: 是否匹配
         """
-        # 将规则URL转换为正则表达式模式
-        pattern = rule_url.replace('/', '\/')
+        normalized_rule_url = MockServer._normalize_rule_url(rule_url)
+        normalized_request_url = MockServer._normalize_request_path(request_url)
 
-        # 替换路径参数，例如 /users/:id -> /users/([^\/]+)
-        pattern = re.sub(r':(\w+)', r'([^\/]+)', pattern)
-
-        # 添加开始和结束标记
+        pattern = re.escape(normalized_rule_url)
+        pattern = re.sub(r':(\w+)', r'[^/]+', pattern)
         pattern = f'^{pattern}$'
 
-        # 检查是否匹配
-        return bool(re.match(pattern, request_url))
+        return bool(re.match(pattern, normalized_request_url))
 
     @staticmethod
     async def _check_conditions(conditions: List[MockCondition], request: Request) -> bool:
@@ -638,39 +700,21 @@ class MockServer:
                 else:
                     return False
             elif condition.type == MockConditionType.BODY:
-                # 请求体匹配
-                try:
-                    # 尝试解析JSON请求体
-                    body = await request.json()
-                    if '.' in condition.key:
-                        # 支持点表示法访问嵌套属性
-                        keys = condition.key.split('.')
-                        value = body
-                        for key in keys:
-                            if isinstance(value, dict) and key in value:
-                                value = value[key]
-                            else:
-                                return False
-                        return MockServer._apply_operator(condition.operator, value, condition.value)
-                    elif condition.operator in [MockConditionOperator.EXISTS, MockConditionOperator.NOT_EXISTS]:
-                        return MockServer._apply_operator(condition.operator, condition.key in body, None)
-                    elif condition.key in body:
-                        return MockServer._apply_operator(condition.operator, body[condition.key], condition.value)
-                    else:
-                        return False
-                except:
-                    # 如果不是JSON请求体，尝试获取表单数据
-                    try:
-                        form = await request.form()
-                        if condition.operator in [MockConditionOperator.EXISTS, MockConditionOperator.NOT_EXISTS]:
-                            return MockServer._apply_operator(condition.operator, condition.key in form, None)
-                        elif condition.key in form:
-                            return MockServer._apply_operator(condition.operator, form[condition.key], condition.value)
-                        else:
-                            return False
-                    except:
-                        # 如果获取表单数据也失败，则无法匹配
-                        return False
+                body = await MockServer._get_request_body_data(request)
+                if body is None:
+                    return False
+
+                if condition.operator in [MockConditionOperator.EXISTS, MockConditionOperator.NOT_EXISTS]:
+                    return MockServer._apply_operator(
+                        condition.operator,
+                        MockServer._is_condition_key_present(body, condition.key),
+                        None
+                    )
+
+                found, actual_value = MockServer._get_condition_actual_value(body, condition.key)
+                if not found:
+                    return False
+                return MockServer._apply_operator(condition.operator, actual_value, condition.value)
             elif condition.type == MockConditionType.COOKIE:
                 # Cookie匹配
                 cookies = request.cookies
@@ -817,13 +861,27 @@ class MockServer:
     async def _execute_script(script: str, context: Dict[str, Any]) -> None:
         """
         执行Mock脚本
-        
+
         :param script: 脚本内容
         :param context: 脚本上下文
         """
         try:
-            # 为了安全，限制脚本的执行环境
+            safe_builtins = {
+                "str": str,
+                "int": int,
+                "float": float,
+                "bool": bool,
+                "dict": dict,
+                "list": list,
+                "len": len,
+                "min": min,
+                "max": max,
+                "sum": sum,
+                "range": range,
+                "enumerate": enumerate,
+            }
             safe_globals = {
+                "__builtins__": safe_builtins,
                 "json": json,
                 "re": re,
                 "time": time,
@@ -831,9 +889,13 @@ class MockServer:
                 "context": context,
                 "log": log
             }
+            local_vars = {"context": context}
 
-            # 执行脚本
-            exec(script, safe_globals)
+            exec(script, safe_globals, local_vars)
+
+            updated_context = local_vars.get("context")
+            if isinstance(updated_context, dict):
+                context.update(updated_context)
         except Exception as e:
             log.error(f"执行Mock脚本失败: {e}")
 
@@ -841,12 +903,11 @@ class MockServer:
     async def _build_response(response_config: MockResponse, content: str) -> Response:
         """
         构建响应
-        
+
         :param response_config: 响应配置
         :param content: 响应内容
         :return: FastAPI响应
         """
-        # 设置内容类型
         content_type = "application/json"
         if response_config.response_type == MockResponseType.TEXT:
             content_type = "text/plain"
@@ -857,15 +918,17 @@ class MockServer:
         elif response_config.response_type == MockResponseType.BINARY:
             content_type = "application/octet-stream"
 
-        # 构建响应头
         headers = {}
         for header in response_config.headers:
             if header.enabled:
                 headers[header.name] = header.value
 
-        # 构建响应
+        response_content = content
+        if response_config.response_type == MockResponseType.BINARY:
+            response_content = content.encode("utf-8") if isinstance(content, str) else content
+
         response = Response(
-            content=content,
+            content=response_content,
             status_code=response_config.status_code,
             media_type=content_type,
             headers=headers

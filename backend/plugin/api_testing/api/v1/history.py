@@ -34,11 +34,9 @@ async def add_history(history: RequestHistoryItem = Body(...)) -> ResponseModel 
     """
     try:
         history_id = await HistoryManager.add_history(history)
-        response = response_base.success(data={"id": history_id})
-        return response.model_dump()
+        return response_base.success(data={"id": history_id})
     except Exception as e:
-        response = response_base.fail(data=f"添加历史记录失败: {str(e)}")
-        return response.model_dump()
+        return response_base.fail(data=f"添加历史记录失败: {str(e)}")
 
 
 @router.get("/{history_id}", response_model=ResponseModel, summary="获取历史记录详情")
@@ -89,17 +87,13 @@ async def get_history_list(
             successful=successful
         )
 
-        # 计算总记录数
-        total_count = len(
-            await HistoryManager.get_history_list(
-                project_id=project_id,
-                limit=0,  # 不限制数量
-                start_time=start_time,
-                end_time=end_time,
-                url_contains=url_contains,
-                method=method,
-                successful=successful
-            )
+        total_count = await HistoryManager.count_history(
+            project_id=project_id,
+            start_time=start_time,
+            end_time=end_time,
+            url_contains=url_contains,
+            method=method,
+            successful=successful
         )
 
         # 构建响应数据
@@ -143,18 +137,14 @@ async def filter_history(
             successful=filter_params.successful
         )
 
-        # 计算总记录数
-        total_count = len(
-            await HistoryManager.get_history_list(
-                project_id=filter_params.project_id,
-                limit=0,  # 不限制数量
-                start_time=filter_params.start_time,
-                end_time=filter_params.end_time,
-                url_contains=filter_params.url_contains,
-                method=filter_params.method,
-                tags=filter_params.tags,
-                successful=filter_params.successful
-            )
+        total_count = await HistoryManager.count_history(
+            project_id=filter_params.project_id,
+            start_time=filter_params.start_time,
+            end_time=filter_params.end_time,
+            url_contains=filter_params.url_contains,
+            method=filter_params.method,
+            tags=filter_params.tags,
+            successful=filter_params.successful
         )
 
         # 构建响应数据
