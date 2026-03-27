@@ -1,19 +1,22 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 import random
+
 from fastapi import APIRouter, Body
-from backend.plugin.sms.schema.sms import SendSmsRequest, SendSmsResponse
-from backend.plugin.sms.service.sms_service import sms_service
-from backend.database.redis import redis_client
-from backend.core.conf import settings
 from fastapi import Depends, Request, Response
-from fastapi_limiter.depends import RateLimiter
+from pyrate_limiter import Duration, Rate
 from starlette.background import BackgroundTasks
+
 from backend.app.admin.schema.token import GetLoginToken
 from backend.app.admin.schema.user import SmsLoginParam
 from backend.app.admin.service.auth_service import auth_service
 from backend.common.response.response_schema import ResponseSchemaModel, response_base
 from backend.common.security.jwt import DependsJwtAuth
+from backend.core.conf import settings
+from backend.database.redis import redis_client
+from backend.plugin.sms.schema.sms import SendSmsRequest, SendSmsResponse
+from backend.plugin.sms.service.sms_service import sms_service
+from backend.utils.limiter import RateLimiter
 
 router = APIRouter()
 
@@ -66,7 +69,7 @@ async def send_login_code(phone: str = Body(..., embed=True)) -> ResponseSchemaM
     '/login/sms',
     summary='短信验证码登录',
     description='使用手机号和短信验证码登录',
-    dependencies=[Depends(RateLimiter(times=5, minutes=1))],
+    dependencies=[Depends(RateLimiter(Rate(5, Duration.MINUTE)))],
 )
 async def login_by_sms(
         request: Request, response: Response, obj: SmsLoginParam, background_tasks: BackgroundTasks

@@ -1,0 +1,5 @@
+AI_ASSISTANT_EVENT_MESSAGE_ACCEPTED = 'ai_assistant.message.accepted'
+AI_ASSISTANT_EVENT_RUN_STARTED = 'ai_assistant.run.started'
+AI_ASSISTANT_EVENT_RUN_PROGRESS = 'ai_assistant.run.progress'
+AI_ASSISTANT_EVENT_RUN_COMPLETED = 'ai_assistant.run.completed'
+AI_ASSISTANT_EVENT_RUN_FAILED = 'ai_assistant.run.failed'

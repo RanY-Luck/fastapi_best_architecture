@@ -1,0 +1,10 @@
+[plugin]
+summary = 'AI助手'
+version = '0.0.1'
+description = 'AI assistant plugin with LangChain-style agent tools and optional Playwright support'
+author = 'ranyong'
+tags = ["other"]
+database = ["mysql", "postgresql"]
+
+[app]
+router = ['v1']
