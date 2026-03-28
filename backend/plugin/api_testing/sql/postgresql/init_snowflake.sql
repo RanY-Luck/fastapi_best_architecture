@@ -106,3 +106,46 @@ CREATE TABLE IF NOT EXISTS api_test_report (
 
 -- 创建索引
 CREATE INDEX idx_api_test_report_test_case_id ON api_test_report(test_case_id);
+
+CREATE TABLE IF NOT EXISTS api_test_suite (
+  id BIGINT PRIMARY KEY COMMENT '主键ID',
+  name VARCHAR(64) NOT NULL COMMENT '集合名称',
+  project_id BIGINT NOT NULL COMMENT '所属项目ID',
+  description TEXT COMMENT '集合描述',
+  status SMALLINT NOT NULL DEFAULT 1 COMMENT '状态 1启用 0禁用',
+  create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
+  CONSTRAINT fk_api_test_suite_project_id FOREIGN KEY (project_id) REFERENCES api_project(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS api_test_suite_case (
+  id BIGINT PRIMARY KEY COMMENT '主键ID',
+  suite_id BIGINT NOT NULL COMMENT '所属集合ID',
+  test_case_id BIGINT NOT NULL COMMENT '所属用例ID',
+  "order" INTEGER NOT NULL COMMENT '集合内顺序',
+  create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
+  CONSTRAINT fk_api_test_suite_case_suite_id FOREIGN KEY (suite_id) REFERENCES api_test_suite(id) ON DELETE CASCADE,
+  CONSTRAINT fk_api_test_suite_case_case_id FOREIGN KEY (test_case_id) REFERENCES api_test_case(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS api_batch_execution_report (
+  id BIGINT PRIMARY KEY COMMENT '主键ID',
+  project_id BIGINT NOT NULL COMMENT '所属项目ID',
+  suite_id BIGINT COMMENT '所属集合ID',
+  name VARCHAR(64) NOT NULL COMMENT '批量执行名称',
+  target_type VARCHAR(16) NOT NULL COMMENT '执行目标类型 project/suite',
+  success BOOLEAN NOT NULL COMMENT '是否成功',
+  total_cases INTEGER NOT NULL COMMENT '总用例数',
+  success_cases INTEGER NOT NULL COMMENT '成功用例数',
+  fail_cases INTEGER NOT NULL COMMENT '失败用例数',
+  max_concurrency INTEGER NOT NULL COMMENT '最大并发数',
+  start_time TIMESTAMP NOT NULL COMMENT '开始时间',
+  end_time TIMESTAMP NOT NULL COMMENT '结束时间',
+  duration INTEGER NOT NULL COMMENT '执行时长(毫秒)',
+  details JSONB NOT NULL COMMENT '批量执行详情',
+  create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
+  CONSTRAINT fk_api_batch_execution_project_id FOREIGN KEY (project_id) REFERENCES api_project(id) ON DELETE CASCADE,
+  CONSTRAINT fk_api_batch_execution_suite_id FOREIGN KEY (suite_id) REFERENCES api_test_suite(id) ON DELETE SET NULL
+);

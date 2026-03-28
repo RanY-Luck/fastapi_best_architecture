@@ -38,6 +38,15 @@
 - **GET** `/v1/api_testing/test-cases`: 获取测试用例列表
 - **PUT** `/v1/api_testing/test-cases/{case_id}`: 更新测试用例
 - **DELETE** `/v1/api_testing/test-cases/{case_id}`: 删除测试用例
+- **POST** `/v1/api_testing/projects/{project_id}/execute`: 按项目批量执行全部启用用例
+
+#### 测试集合管理接口
+- **POST** `/v1/api_testing/test-suites`: 创建测试集合
+- **GET** `/v1/api_testing/test-suites/{suite_id}`: 获取测试集合详情
+- **GET** `/v1/api_testing/test-suites`: 获取测试集合列表
+- **PUT** `/v1/api_testing/test-suites/{suite_id}`: 更新测试集合
+- **DELETE** `/v1/api_testing/test-suites/{suite_id}`: 删除测试集合
+- **POST** `/v1/api_testing/test-suites/{suite_id}/execute`: 按测试集合批量执行用例
 
 #### 测试步骤管理接口
 - **POST** `/v1/api_testing/test-steps`: 创建测试步骤
@@ -182,6 +191,25 @@
 - `duration`: 执行时长(毫秒)
 - `details`: 报告详情 (JSON)
 - `create_time`: 创建时间
+
+### API测试集合表 (api_test_suite)
+- `id`: 主键ID
+- `name`: 集合名称
+- `project_id`: 所属项目ID (外键)
+- `description`: 集合描述
+- `status`: 状态 (1启用 0禁用)
+
+### API批量执行报告表 (api_batch_execution_report)
+- `id`: 主键ID
+- `project_id`: 所属项目ID (外键)
+- `suite_id`: 所属集合ID (可选外键)
+- `target_type`: 执行目标类型 (`project` / `suite`)
+- `success`: 是否成功
+- `total_cases`: 总用例数
+- `success_cases`: 成功用例数
+- `fail_cases`: 失败用例数
+- `max_concurrency`: 最大并发数
+- `details`: 聚合执行详情 (JSON)
 
 ## 使用示例
 

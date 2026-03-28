@@ -9,7 +9,13 @@ from sqlalchemy import select, delete, func
 from sqlalchemy.orm import joinedload
 
 from backend.database.db import async_db_session
-from backend.plugin.api_testing.model.models import ApiTestReport, ApiTestCase, ApiProject
+from backend.plugin.api_testing.model.models import (
+    ApiBatchExecutionReport,
+    ApiProject,
+    ApiTestCase,
+    ApiTestReport,
+    ApiTestSuite,
+)
 from backend.plugin.api_testing.schema.request import TestReportCreateRequest
 from backend.plugin.api_testing.utils.report_generator import TestReport
 
@@ -202,3 +208,81 @@ class TestReportService:
                     "project_name": row.project_name
                 })
             return test_cases
+
+    @staticmethod
+    async def get_batch_execution_report_by_id(report_id: int) -> Optional[ApiBatchExecutionReport]:
+        """根据ID获取批量执行报告。"""
+        async with async_db_session() as db:
+            result = await db.execute(
+                select(ApiBatchExecutionReport)
+                .options(
+                    joinedload(ApiBatchExecutionReport.project),
+                    joinedload(ApiBatchExecutionReport.suite),
+                )
+                .where(ApiBatchExecutionReport.id == report_id)
+            )
+            return result.scalar_one_or_none()
+
+    @staticmethod
+    async def get_batch_execution_reports(
+            project_id: Optional[int] = None,
+            suite_id: Optional[int] = None,
+            target_type: Optional[str] = None,
+            start_date: Optional[datetime] = None,
+            end_date: Optional[datetime] = None,
+            success_only: Optional[bool] = None,
+            skip: int = 0,
+            limit: int = 100
+    ) -> List[ApiBatchExecutionReport]:
+        """获取批量执行报告列表。"""
+        async with async_db_session() as db:
+            query = select(ApiBatchExecutionReport).options(
+                joinedload(ApiBatchExecutionReport.project),
+                joinedload(ApiBatchExecutionReport.suite),
+            )
+
+            if project_id is not None:
+                query = query.where(ApiBatchExecutionReport.project_id == project_id)
+            if suite_id is not None:
+                query = query.where(ApiBatchExecutionReport.suite_id == suite_id)
+            if target_type:
+                query = query.where(ApiBatchExecutionReport.target_type == target_type)
+            if start_date:
+                query = query.where(ApiBatchExecutionReport.start_time >= start_date)
+            if end_date:
+                query = query.where(ApiBatchExecutionReport.start_time <= end_date)
+            if success_only is not None:
+                query = query.where(ApiBatchExecutionReport.success == success_only)
+
+            query = query.offset(skip).limit(limit).order_by(ApiBatchExecutionReport.created_time.desc())
+            result = await db.execute(query)
+            return result.scalars().all()
+
+    @staticmethod
+    async def get_batch_execution_report_count(
+            project_id: Optional[int] = None,
+            suite_id: Optional[int] = None,
+            target_type: Optional[str] = None,
+            start_date: Optional[datetime] = None,
+            end_date: Optional[datetime] = None,
+            success_only: Optional[bool] = None
+    ) -> int:
+        """获取批量执行报告总数。"""
+        async with async_db_session() as db:
+            query = select(func.count(ApiBatchExecutionReport.id))
+
+            if project_id is not None:
+                query = query.where(ApiBatchExecutionReport.project_id == project_id)
+            if suite_id is not None:
+                query = query.where(ApiBatchExecutionReport.suite_id == suite_id)
+            if target_type:
+                query = query.where(ApiBatchExecutionReport.target_type == target_type)
+            if start_date:
+                query = query.where(ApiBatchExecutionReport.start_time >= start_date)
+            if end_date:
+                query = query.where(ApiBatchExecutionReport.start_time <= end_date)
+            if success_only is not None:
+                query = query.where(ApiBatchExecutionReport.success == success_only)
+
+            result = await db.execute(query)
+            return result.scalar()

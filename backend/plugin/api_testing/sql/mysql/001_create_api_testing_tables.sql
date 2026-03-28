@@ -86,6 +86,57 @@ CREATE TABLE IF NOT EXISTS `api_test_report` (
     INDEX `idx_create_time` (`create_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='API测试报告表';
 
+CREATE TABLE IF NOT EXISTS `api_test_suite` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
+    `name` VARCHAR(64) NOT NULL COMMENT '集合名称',
+    `project_id` INT NOT NULL COMMENT '所属项目ID',
+    `description` TEXT COMMENT '集合描述',
+    `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态 1启用 0禁用',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    FOREIGN KEY (`project_id`) REFERENCES `api_project`(`id`) ON DELETE CASCADE,
+    INDEX `idx_project_id` (`project_id`),
+    INDEX `idx_name` (`name`),
+    INDEX `idx_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='API测试集合表';
+
+CREATE TABLE IF NOT EXISTS `api_test_suite_case` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
+    `suite_id` INT NOT NULL COMMENT '所属集合ID',
+    `test_case_id` INT NOT NULL COMMENT '所属用例ID',
+    `order` INT NOT NULL COMMENT '集合内顺序',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    FOREIGN KEY (`suite_id`) REFERENCES `api_test_suite`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`test_case_id`) REFERENCES `api_test_case`(`id`) ON DELETE CASCADE,
+    INDEX `idx_suite_id` (`suite_id`),
+    INDEX `idx_test_case_id` (`test_case_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='API测试集合成员表';
+
+CREATE TABLE IF NOT EXISTS `api_batch_execution_report` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
+    `project_id` INT NOT NULL COMMENT '所属项目ID',
+    `suite_id` INT DEFAULT NULL COMMENT '所属集合ID',
+    `name` VARCHAR(64) NOT NULL COMMENT '批量执行名称',
+    `target_type` VARCHAR(16) NOT NULL COMMENT '执行目标类型 project/suite',
+    `success` BOOLEAN NOT NULL COMMENT '是否成功',
+    `total_cases` INT NOT NULL COMMENT '总用例数',
+    `success_cases` INT NOT NULL COMMENT '成功用例数',
+    `fail_cases` INT NOT NULL COMMENT '失败用例数',
+    `max_concurrency` INT NOT NULL COMMENT '最大并发数',
+    `start_time` DATETIME NOT NULL COMMENT '开始时间',
+    `end_time` DATETIME NOT NULL COMMENT '结束时间',
+    `duration` INT NOT NULL COMMENT '执行时长(毫秒)',
+    `details` JSON NOT NULL COMMENT '批量执行详情',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    FOREIGN KEY (`project_id`) REFERENCES `api_project`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`suite_id`) REFERENCES `api_test_suite`(`id`) ON DELETE SET NULL,
+    INDEX `idx_project_id` (`project_id`),
+    INDEX `idx_suite_id` (`suite_id`),
+    INDEX `idx_target_type` (`target_type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='API批量执行报告表';
+
 -- 插入示例数据
 INSERT INTO `api_project` (`name`, `description`, `base_url`, `headers`, `variables`) VALUES
 ('示例API项目', '这是一个示例API测试项目', 'https://jsonplaceholder.typicode.com', 

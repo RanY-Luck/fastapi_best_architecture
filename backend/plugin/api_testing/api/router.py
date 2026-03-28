@@ -15,6 +15,7 @@ from backend.plugin.api_testing.api.v1.project import router as project_router
 from backend.plugin.api_testing.api.v1.test_case import router as test_case_router
 from backend.plugin.api_testing.api.v1.test_step import router as test_step_router
 from backend.plugin.api_testing.api.v1.test_report import router as test_report_router
+from backend.plugin.api_testing.api.v1.test_suite import router as test_suite_router
 from backend.plugin.api_testing.api.v1.step_helper import router as step_helper_router
 from backend.plugin.api_testing.api.v1.test_step_enhanced import router as step_enhanced_router
 
@@ -23,6 +24,7 @@ v1 = APIRouter(prefix=f'{settings.FASTAPI_API_V1_PATH}/api_testing')
 # 数据管理接口
 v1.include_router(project_router, prefix='/projects', tags=['项目管理'])
 v1.include_router(test_case_router, prefix='/test_cases', tags=['测试用例管理'])
+v1.include_router(test_suite_router, prefix='/test_suites', tags=['测试集合管理'])
 v1.include_router(test_step_router, prefix='/test_steps', tags=['测试步骤管理'])
 v1.include_router(test_report_router, prefix='/test_reports', tags=['测试报告管理'])
 

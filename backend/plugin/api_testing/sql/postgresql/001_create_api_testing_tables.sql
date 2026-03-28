@@ -156,6 +156,82 @@ COMMENT ON COLUMN api_test_report.duration IS '执行时长(毫秒)';
 COMMENT ON COLUMN api_test_report.details IS '报告详情';
 COMMENT ON COLUMN api_test_report.create_time IS '创建时间';
 
+-- API测试集合表
+CREATE TABLE IF NOT EXISTS api_test_suite (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(64) NOT NULL,
+    project_id INTEGER NOT NULL,
+    description TEXT,
+    status SMALLINT NOT NULL DEFAULT 1,
+    create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (project_id) REFERENCES api_project(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_api_test_suite_project_id ON api_test_suite(project_id);
+CREATE INDEX IF NOT EXISTS idx_api_test_suite_name ON api_test_suite(name);
+CREATE INDEX IF NOT EXISTS idx_api_test_suite_status ON api_test_suite(status);
+
+COMMENT ON TABLE api_test_suite IS 'API测试集合表';
+COMMENT ON COLUMN api_test_suite.id IS '主键ID';
+COMMENT ON COLUMN api_test_suite.name IS '集合名称';
+COMMENT ON COLUMN api_test_suite.project_id IS '所属项目ID';
+COMMENT ON COLUMN api_test_suite.description IS '集合描述';
+COMMENT ON COLUMN api_test_suite.status IS '状态 1启用 0禁用';
+
+-- API测试集合成员表
+CREATE TABLE IF NOT EXISTS api_test_suite_case (
+    id SERIAL PRIMARY KEY,
+    suite_id INTEGER NOT NULL,
+    test_case_id INTEGER NOT NULL,
+    "order" INTEGER NOT NULL,
+    create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (suite_id) REFERENCES api_test_suite(id) ON DELETE CASCADE,
+    FOREIGN KEY (test_case_id) REFERENCES api_test_case(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_api_test_suite_case_suite_id ON api_test_suite_case(suite_id);
+CREATE INDEX IF NOT EXISTS idx_api_test_suite_case_test_case_id ON api_test_suite_case(test_case_id);
+
+COMMENT ON TABLE api_test_suite_case IS 'API测试集合成员表';
+COMMENT ON COLUMN api_test_suite_case.suite_id IS '所属集合ID';
+COMMENT ON COLUMN api_test_suite_case.test_case_id IS '所属用例ID';
+COMMENT ON COLUMN api_test_suite_case."order" IS '集合内顺序';
+
+-- API批量执行报告表
+CREATE TABLE IF NOT EXISTS api_batch_execution_report (
+    id SERIAL PRIMARY KEY,
+    project_id INTEGER NOT NULL,
+    suite_id INTEGER,
+    name VARCHAR(64) NOT NULL,
+    target_type VARCHAR(16) NOT NULL,
+    success BOOLEAN NOT NULL,
+    total_cases INTEGER NOT NULL,
+    success_cases INTEGER NOT NULL,
+    fail_cases INTEGER NOT NULL,
+    max_concurrency INTEGER NOT NULL,
+    start_time TIMESTAMP NOT NULL,
+    end_time TIMESTAMP NOT NULL,
+    duration INTEGER NOT NULL,
+    details JSONB NOT NULL,
+    create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (project_id) REFERENCES api_project(id) ON DELETE CASCADE,
+    FOREIGN KEY (suite_id) REFERENCES api_test_suite(id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_api_batch_execution_report_project_id ON api_batch_execution_report(project_id);
+CREATE INDEX IF NOT EXISTS idx_api_batch_execution_report_suite_id ON api_batch_execution_report(suite_id);
+CREATE INDEX IF NOT EXISTS idx_api_batch_execution_report_target_type ON api_batch_execution_report(target_type);
+
+COMMENT ON TABLE api_batch_execution_report IS 'API批量执行报告表';
+COMMENT ON COLUMN api_batch_execution_report.project_id IS '所属项目ID';
+COMMENT ON COLUMN api_batch_execution_report.suite_id IS '所属集合ID';
+COMMENT ON COLUMN api_batch_execution_report.target_type IS '执行目标类型 project/suite';
+COMMENT ON COLUMN api_batch_execution_report.max_concurrency IS '最大并发数';
+COMMENT ON COLUMN api_batch_execution_report.details IS '批量执行详情';
+
 -- 创建更新时间触发器函数
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -169,6 +245,9 @@ $$ language 'plpgsql';
 CREATE TRIGGER update_api_project_updated_at BEFORE UPDATE ON api_project FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_api_test_case_updated_at BEFORE UPDATE ON api_test_case FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_api_test_step_updated_at BEFORE UPDATE ON api_test_step FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_api_test_suite_updated_at BEFORE UPDATE ON api_test_suite FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_api_test_suite_case_updated_at BEFORE UPDATE ON api_test_suite_case FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_api_batch_execution_report_updated_at BEFORE UPDATE ON api_batch_execution_report FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- 插入示例数据
 INSERT INTO api_project (name, description, base_url, headers, variables) VALUES

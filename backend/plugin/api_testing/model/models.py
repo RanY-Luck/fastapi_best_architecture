@@ -2,8 +2,10 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 from typing import List
-from sqlalchemy import String, Text, DateTime, JSON, ForeignKey
+
+from sqlalchemy import DateTime, ForeignKey, JSON, String, Text
 from sqlalchemy.orm import relationship, Mapped, mapped_column
+
 from backend.common.enums import StatusType
 from backend.common.model import Base, id_key
 
@@ -22,6 +24,12 @@ class ApiProject(Base):
 
     # 关联关系
     test_cases: Mapped[List["ApiTestCase"]] = relationship("ApiTestCase", back_populates="project", init=False)
+    test_suites: Mapped[List["ApiTestSuite"]] = relationship("ApiTestSuite", back_populates="project", init=False)
+    batch_reports: Mapped[List["ApiBatchExecutionReport"]] = relationship(
+        "ApiBatchExecutionReport",
+        back_populates="project",
+        init=False,
+    )
 
 
 class ApiTestCase(Base):
@@ -40,6 +48,7 @@ class ApiTestCase(Base):
     project: Mapped["ApiProject"] = relationship("ApiProject", back_populates="test_cases", init=False)
     steps: Mapped[List["ApiTestStep"]] = relationship("ApiTestStep", back_populates="test_case", init=False)
     reports: Mapped[List["ApiTestReport"]] = relationship("ApiTestReport", back_populates="test_case", init=False)
+    suite_cases: Mapped[List["ApiTestSuiteCase"]] = relationship("ApiTestSuiteCase", back_populates="test_case", init=False)
 
 
 class ApiTestStep(Base):
@@ -87,3 +96,58 @@ class ApiTestReport(Base):
 
     # 关联关系
     test_case: Mapped["ApiTestCase"] = relationship("ApiTestCase", back_populates="reports", init=False)
+
+
+class ApiTestSuite(Base):
+    """API测试集合表"""
+    __tablename__ = 'api_test_suite'
+
+    id: Mapped[id_key] = mapped_column(init=False)
+    name: Mapped[str] = mapped_column(String(64), comment='集合名称')
+    project_id: Mapped[int] = mapped_column(ForeignKey('api_project.id'), comment='所属项目ID')
+    description: Mapped[str | None] = mapped_column(Text, default=None, comment='集合描述')
+    status: Mapped[int] = mapped_column(default=StatusType.enable.value, comment='状态 1启用 0禁用')
+
+    project: Mapped["ApiProject"] = relationship("ApiProject", back_populates="test_suites", init=False)
+    suite_cases: Mapped[List["ApiTestSuiteCase"]] = relationship("ApiTestSuiteCase", back_populates="suite", init=False)
+    batch_reports: Mapped[List["ApiBatchExecutionReport"]] = relationship(
+        "ApiBatchExecutionReport",
+        back_populates="suite",
+        init=False,
+    )
+
+
+class ApiTestSuiteCase(Base):
+    """API测试集合成员表"""
+    __tablename__ = 'api_test_suite_case'
+
+    id: Mapped[id_key] = mapped_column(init=False)
+    suite_id: Mapped[int] = mapped_column(ForeignKey('api_test_suite.id'), comment='所属集合ID')
+    test_case_id: Mapped[int] = mapped_column(ForeignKey('api_test_case.id'), comment='所属用例ID')
+    order: Mapped[int] = mapped_column(comment='集合内顺序')
+
+    suite: Mapped["ApiTestSuite"] = relationship("ApiTestSuite", back_populates="suite_cases", init=False)
+    test_case: Mapped["ApiTestCase"] = relationship("ApiTestCase", back_populates="suite_cases", init=False)
+
+
+class ApiBatchExecutionReport(Base):
+    """API批量执行报告表"""
+    __tablename__ = 'api_batch_execution_report'
+
+    id: Mapped[id_key] = mapped_column(init=False)
+    project_id: Mapped[int] = mapped_column(ForeignKey('api_project.id'), comment='所属项目ID')
+    name: Mapped[str] = mapped_column(String(64), comment='批量执行名称')
+    target_type: Mapped[str] = mapped_column(String(16), comment='执行目标类型 project/suite')
+    total_cases: Mapped[int] = mapped_column(comment='总用例数')
+    success_cases: Mapped[int] = mapped_column(comment='成功用例数')
+    fail_cases: Mapped[int] = mapped_column(comment='失败用例数')
+    max_concurrency: Mapped[int] = mapped_column(comment='最大并发数')
+    start_time: Mapped[datetime] = mapped_column(DateTime, comment='开始时间')
+    end_time: Mapped[datetime] = mapped_column(DateTime, comment='结束时间')
+    duration: Mapped[int] = mapped_column(comment='执行时长(毫秒)')
+    details: Mapped[dict] = mapped_column(JSON, comment='批量执行详情')
+    success: Mapped[int] = mapped_column(comment='是否成功 0失败 1成功')
+    suite_id: Mapped[int | None] = mapped_column(ForeignKey('api_test_suite.id'), default=None, comment='所属集合ID')
+
+    project: Mapped["ApiProject"] = relationship("ApiProject", back_populates="batch_reports", init=False)
+    suite: Mapped["ApiTestSuite"] = relationship("ApiTestSuite", back_populates="batch_reports", init=False)

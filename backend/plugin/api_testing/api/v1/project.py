@@ -6,8 +6,15 @@ API项目管理接口
 from datetime import datetime
 from fastapi import APIRouter, Path, Query
 from backend.common.response.response_schema import response_base, ResponseModel, ResponseSchemaModel
+from backend.plugin.api_testing.schema.request import (
+    BatchExecutionRequest,
+    BatchExecutionResponse,
+    ProjectCreateRequest,
+    ProjectResponse,
+    ProjectUpdateRequest,
+)
 from backend.plugin.api_testing.service.project_service import ProjectService
-from backend.plugin.api_testing.schema.request import (ProjectCreateRequest, ProjectUpdateRequest, ProjectResponse)
+from backend.plugin.api_testing.service.test_batch_execution_service import BatchExecutionService
 
 router = APIRouter()
 
@@ -143,3 +150,22 @@ async def delete_project(project_id: int = Path(..., description="项目ID")) ->
         return response_base.success(data="项目删除成功")
     except Exception as e:
         return response_base.fail(data=f"删除项目失败: {str(e)}")
+
+
+@router.post('/{project_id}/execute', response_model=ResponseModel, summary='批量执行项目测试用例')
+async def execute_project(
+        execution_data: BatchExecutionRequest,
+        project_id: int = Path(..., description='项目ID')
+) -> ResponseModel | ResponseSchemaModel:
+    """
+    按项目批量执行全部启用用例
+    """
+    try:
+        result = await BatchExecutionService.execute_project(
+            project_id,
+            environment_id=execution_data.environment_id,
+            max_concurrency=execution_data.max_concurrency
+        )
+        return response_base.success(data=BatchExecutionResponse(**result).model_dump())
+    except Exception as e:
+        return response_base.fail(data=f"批量执行项目失败: {str(e)}")

@@ -78,6 +78,32 @@
 - **接口**: `PUT /v1/api_testing/test-cases/{case_id}`
 
 #### 2.5 删除测试用例
+
+#### 2.6 按项目批量执行
+- **路径**: `POST /v1/api_testing/projects/{project_id}/execute`
+- **描述**: 批量执行项目下全部启用测试用例，单用例内部串行，多个用例按配置并发运行
+
+### 3. 测试集合管理接口
+
+#### 3.1 创建测试集合
+- **路径**: `POST /v1/api_testing/test_suites`
+- **描述**: 创建测试集合并维护集合成员顺序
+
+#### 3.2 获取测试集合详情
+- **路径**: `GET /v1/api_testing/test_suites/{suite_id}`
+
+#### 3.3 获取测试集合列表
+- **路径**: `GET /v1/api_testing/test_suites`
+
+#### 3.4 更新测试集合
+- **路径**: `PUT /v1/api_testing/test_suites/{suite_id}`
+
+#### 3.5 删除测试集合
+- **路径**: `DELETE /v1/api_testing/test_suites/{suite_id}`
+
+#### 3.6 按测试集合批量执行
+- **路径**: `POST /v1/api_testing/test_suites/{suite_id}/execute`
+- **描述**: 执行集合中的全部启用测试用例，并生成聚合批量执行报告
 - **接口**: `DELETE /v1/api_testing/test-cases/{case_id}`
 
 ### 3. 测试步骤管理接口

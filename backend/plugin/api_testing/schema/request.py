@@ -161,6 +161,37 @@ class TestCaseUpdateRequest(BaseModel):
     status: Optional[int] = Field(None, description="状态 1启用 0禁用")
 
 
+class TestSuiteCreateRequest(BaseModel):
+    """测试集合创建请求"""
+    name: str = Field(..., description="集合名称")
+    project_id: int = Field(..., description="所属项目ID")
+    description: Optional[str] = Field(None, description="集合描述")
+    case_ids: List[int] = Field(default_factory=list, description="集合包含的测试用例ID列表")
+    status: int = Field(1, description="状态 1启用 0禁用")
+
+
+class TestSuiteUpdateRequest(BaseModel):
+    """测试集合更新请求"""
+    name: Optional[str] = Field(None, description="集合名称")
+    description: Optional[str] = Field(None, description="集合描述")
+    case_ids: Optional[List[int]] = Field(None, description="集合包含的测试用例ID列表")
+    status: Optional[int] = Field(None, description="状态 1启用 0禁用")
+
+
+class TestSuiteResponse(BaseModel):
+    """测试集合响应"""
+    id: int
+    name: str
+    project_id: int
+    project_name: Optional[str] = None
+    description: Optional[str] = None
+    status: int
+    case_ids: List[int] = Field(default_factory=list)
+    case_count: int
+    created_time: str
+    updated_time: str
+
+
 # 测试步骤相关模型
 class TestStepCreateRequest(BaseModel):
     """测试步骤创建请求"""
@@ -232,6 +263,54 @@ class TestReportResponse(BaseModel):
     start_time: str
     end_time: str
     duration: int
+    details: Dict[str, Any]
+    created_time: str
+
+
+class BatchExecutionRequest(BaseModel):
+    """批量执行请求"""
+    environment_id: Optional[int] = Field(None, description="环境ID")
+    max_concurrency: int = Field(5, ge=1, le=20, description="最大并发数，范围1-20")
+
+
+class BatchExecutionResponse(BaseModel):
+    """批量执行响应"""
+    batch_report_id: int
+    name: str
+    target_type: str
+    target_id: int
+    project_id: int
+    suite_id: Optional[int] = None
+    success: bool
+    total_cases: int
+    success_cases: int
+    fail_cases: int
+    max_concurrency: int
+    duration: int
+    report_ids: List[int] = Field(default_factory=list)
+    results: List[Dict[str, Any]] = Field(default_factory=list)
+    start_time: str
+    end_time: str
+
+
+class BatchExecutionReportResponse(BaseModel):
+    """批量执行报告响应"""
+    id: int
+    project_id: int
+    project_name: Optional[str] = None
+    suite_id: Optional[int] = None
+    suite_name: Optional[str] = None
+    name: str
+    target_type: str
+    success: int
+    total_cases: int
+    success_cases: int
+    fail_cases: int
+    max_concurrency: int
+    start_time: str
+    end_time: str
+    duration: int
+    report_ids: List[int] = Field(default_factory=list)
     details: Dict[str, Any]
     created_time: str
 
