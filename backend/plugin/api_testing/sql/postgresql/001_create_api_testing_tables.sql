@@ -266,3 +266,37 @@ INSERT INTO api_test_step (name, test_case_id, url, method, headers, params, val
  '{}'::jsonb, 
  '[{"source": "json", "type": "equals", "path": "$.id", "expected": 1, "message": "用户ID验证"}]'::jsonb, 
  1);
+
+CREATE TABLE IF NOT EXISTS api_sql_execution_task (
+    id SERIAL PRIMARY KEY,
+    task_id VARCHAR(64) NOT NULL,
+    celery_task_id VARCHAR(64),
+    name VARCHAR(128) NOT NULL,
+    status VARCHAR(32) NOT NULL DEFAULT 'pending',
+    query_payload JSONB NOT NULL,
+    result JSONB,
+    error TEXT,
+    start_time TIMESTAMP,
+    end_time TIMESTAMP,
+    duration INTEGER,
+    create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS uk_api_sql_execution_task_task_id ON api_sql_execution_task(task_id);
+CREATE INDEX IF NOT EXISTS idx_api_sql_execution_task_status ON api_sql_execution_task(status);
+CREATE INDEX IF NOT EXISTS idx_api_sql_execution_task_celery_task_id ON api_sql_execution_task(celery_task_id);
+
+COMMENT ON TABLE api_sql_execution_task IS 'API SQL异步执行任务表';
+COMMENT ON COLUMN api_sql_execution_task.task_id IS '任务ID';
+COMMENT ON COLUMN api_sql_execution_task.celery_task_id IS 'Celery任务ID';
+COMMENT ON COLUMN api_sql_execution_task.name IS '任务名称';
+COMMENT ON COLUMN api_sql_execution_task.status IS '任务状态';
+COMMENT ON COLUMN api_sql_execution_task.query_payload IS 'SQL查询载荷';
+COMMENT ON COLUMN api_sql_execution_task.result IS '执行结果';
+COMMENT ON COLUMN api_sql_execution_task.error IS '错误信息';
+COMMENT ON COLUMN api_sql_execution_task.start_time IS '开始时间';
+COMMENT ON COLUMN api_sql_execution_task.end_time IS '结束时间';
+COMMENT ON COLUMN api_sql_execution_task.duration IS '执行时长(毫秒)';
+
+CREATE TRIGGER update_api_sql_execution_task_updated_at BEFORE UPDATE ON api_sql_execution_task FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

@@ -149,3 +149,28 @@ CREATE TABLE IF NOT EXISTS api_batch_execution_report (
   CONSTRAINT fk_api_batch_execution_project_id FOREIGN KEY (project_id) REFERENCES api_project(id) ON DELETE CASCADE,
   CONSTRAINT fk_api_batch_execution_suite_id FOREIGN KEY (suite_id) REFERENCES api_test_suite(id) ON DELETE SET NULL
 );
+
+CREATE TABLE IF NOT EXISTS api_sql_execution_task (
+  id BIGINT PRIMARY KEY,
+  task_id VARCHAR(64) NOT NULL,
+  celery_task_id VARCHAR(64),
+  name VARCHAR(128) NOT NULL,
+  status VARCHAR(32) NOT NULL DEFAULT 'pending',
+  query_payload JSONB NOT NULL,
+  result JSONB,
+  error TEXT,
+  start_time TIMESTAMP,
+  end_time TIMESTAMP,
+  duration INTEGER,
+  create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT uk_api_sql_execution_task_task_id UNIQUE (task_id)
+);
+
+CREATE INDEX idx_api_sql_execution_task_status ON api_sql_execution_task(status);
+CREATE INDEX idx_api_sql_execution_task_celery_task_id ON api_sql_execution_task(celery_task_id);
+
+CREATE TRIGGER update_api_sql_execution_task_update_time
+BEFORE UPDATE ON api_sql_execution_task
+FOR EACH ROW
+EXECUTE FUNCTION update_api_project_update_time();

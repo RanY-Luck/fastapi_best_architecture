@@ -192,8 +192,8 @@ async def get_assertion_templates(
             "name": "验证响应时间",
             "description": "验证响应时间小于指定值(毫秒)",
             "type": "less_than",
-            "source": "json",
-            "example_path": "$.elapsed_time",
+            "source": "elapsed_time",
+            "example_path": None,
             "example_expected": 1000,
             "category": "性能验证"
         },
@@ -301,28 +301,28 @@ async def get_assertion_types() -> ResponseModel | ResponseSchemaModel:
             "name": "小于",
             "description": "验证数值小于预期值",
             "requires_expected": True,
-            "supports_sources": ["status_code", "json"]
+            "supports_sources": ["status_code", "json", "elapsed_time"]
         },
         {
             "type": "less_than_or_equals",
             "name": "小于或等于",
             "description": "验证数值小于或等于预期值",
             "requires_expected": True,
-            "supports_sources": ["status_code", "json"]
+            "supports_sources": ["status_code", "json", "elapsed_time"]
         },
         {
             "type": "greater_than",
             "name": "大于",
             "description": "验证数值大于预期值",
             "requires_expected": True,
-            "supports_sources": ["status_code", "json"]
+            "supports_sources": ["status_code", "json", "elapsed_time"]
         },
         {
             "type": "greater_than_or_equals",
             "name": "大于或等于",
             "description": "验证数值大于或等于预期值",
             "requires_expected": True,
-            "supports_sources": ["status_code", "json"]
+            "supports_sources": ["status_code", "json", "elapsed_time"]
         },
         {
             "type": "exists",
@@ -1459,3 +1459,4 @@ async def test_jsonpath(
         )
     except Exception as e:
         return response_base.fail(data=f"JSONPath表达式错误: {str(e)}")
+

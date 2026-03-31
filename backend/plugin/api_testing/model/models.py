@@ -151,3 +151,21 @@ class ApiBatchExecutionReport(Base):
 
     project: Mapped["ApiProject"] = relationship("ApiProject", back_populates="batch_reports", init=False)
     suite: Mapped["ApiTestSuite"] = relationship("ApiTestSuite", back_populates="batch_reports", init=False)
+
+
+class ApiSqlExecutionTask(Base):
+    """API SQL异步执行任务表"""
+    __tablename__ = 'api_sql_execution_task'
+
+    id: Mapped[id_key] = mapped_column(init=False)
+    task_id: Mapped[str] = mapped_column(String(64), unique=True, index=True, comment='任务ID')
+    name: Mapped[str] = mapped_column(String(128), comment='任务名称')
+    query_payload: Mapped[dict] = mapped_column(JSON, comment='SQL查询载荷')
+    celery_task_id: Mapped[str | None] = mapped_column(String(64), default=None, comment='Celery任务ID')
+    status: Mapped[str] = mapped_column(String(32), default='pending', comment='任务状态')
+    result: Mapped[dict | None] = mapped_column(JSON, default=None, comment='执行结果')
+    error: Mapped[str | None] = mapped_column(Text, default=None, comment='错误信息')
+    start_time: Mapped[datetime | None] = mapped_column(DateTime, default=None, comment='开始时间')
+    end_time: Mapped[datetime | None] = mapped_column(DateTime, default=None, comment='结束时间')
+    duration: Mapped[int | None] = mapped_column(default=None, comment='执行时长(毫秒)')
+

@@ -128,3 +128,23 @@ CREATE TABLE IF NOT EXISTS `api_batch_execution_report` (
   CONSTRAINT `fk_api_batch_execution_project` FOREIGN KEY (`project_id`) REFERENCES `api_project` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_api_batch_execution_suite` FOREIGN KEY (`suite_id`) REFERENCES `api_test_suite` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='API批量执行报告表';
+
+CREATE TABLE IF NOT EXISTS `api_sql_execution_task` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `task_id` varchar(64) NOT NULL COMMENT '任务ID',
+  `celery_task_id` varchar(64) DEFAULT NULL COMMENT 'Celery任务ID',
+  `name` varchar(128) NOT NULL COMMENT '任务名称',
+  `status` varchar(32) NOT NULL DEFAULT 'pending' COMMENT '任务状态',
+  `query_payload` json NOT NULL COMMENT 'SQL查询载荷',
+  `result` json DEFAULT NULL COMMENT '执行结果',
+  `error` text COMMENT '错误信息',
+  `start_time` datetime DEFAULT NULL COMMENT '开始时间',
+  `end_time` datetime DEFAULT NULL COMMENT '结束时间',
+  `duration` int(11) DEFAULT NULL COMMENT '执行时长(毫秒)',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_api_sql_execution_task_task_id` (`task_id`),
+  KEY `idx_api_sql_execution_task_status` (`status`),
+  KEY `idx_api_sql_execution_task_celery_task_id` (`celery_task_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='API SQL异步执行任务表';
