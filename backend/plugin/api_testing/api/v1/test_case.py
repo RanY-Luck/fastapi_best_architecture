@@ -3,10 +3,11 @@
 """
 API测试用例管理接口
 """
+import json
 from typing import Any, Dict, Optional
 from datetime import datetime
 from fastapi import APIRouter, Path, Query
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, StreamingResponse
 from backend.common.response.response_schema import response_base, ResponseModel, ResponseSchemaModel
 from backend.plugin.api_testing.service.test_case_service import TestCaseService
 from backend.plugin.api_testing.service.test_case_execution_service import TestCaseExecutionService
@@ -255,6 +256,42 @@ async def execute_test_case(
         import traceback
         log.error(traceback.format_exc())
         return response_base.fail(data=f"执行测试用例失败: {str(e)}")
+
+
+@router.post("/{case_id}/execute/stream", summary="流式执行测试用例", response_model=None)
+async def execute_test_case_stream(
+        case_id: int = Path(..., description="测试用例ID"),
+        environment_id: Optional[int] = Query(None, description="环境ID")
+) -> StreamingResponse | ResponseSchemaModel:
+    """流式返回测试执行事件。"""
+    async def _event_generator():
+        try:
+            async for event in TestCaseExecutionService.stream_test_case_execution(case_id, environment_id):
+                payload = json.dumps(make_serializable(event), ensure_ascii=False)
+                yield f"{payload}\n".encode()
+        except Exception as e:
+            log.error(f"流式执行测试用例失败: {e}")
+            error_event = {
+                "type": "error",
+                "timestamp": datetime.now().isoformat(),
+                "case_id": case_id,
+                "environment_id": environment_id,
+                "message": str(e),
+                "error_type": type(e).__name__,
+            }
+            yield f"{json.dumps(error_event, ensure_ascii=False)}\n".encode()
+
+    try:
+        return StreamingResponse(
+            _event_generator(),
+            media_type="application/x-ndjson",
+            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+        )
+    except Exception as e:
+        log.error(f"流式执行测试用例失败: {e}")
+        import traceback
+        log.error(traceback.format_exc())
+        return response_base.fail(data=f"流式执行测试用例失败: {str(e)}")
 
 
 @router.get("/{case_id}/execute/preview", summary="执行并预览HTML报告")
