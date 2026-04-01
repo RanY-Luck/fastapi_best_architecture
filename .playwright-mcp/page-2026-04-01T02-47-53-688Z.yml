@@ -1,8 +1,0 @@
-- generic [active] [ref=e1]:
-  - generic:
-    - generic: FBA UI
-  - generic [ref=e5]: 原文
-  - generic [ref=e9]:
-    - img "loading" [ref=e10]:
-      - img [ref=e11]
-    - generic [ref=e13]: 加载菜单中...

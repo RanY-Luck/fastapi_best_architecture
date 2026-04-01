@@ -1,6 +1,0 @@
-[    3269ms] [LOG] 🍍 "websocket" store installed 🆕 @ http://localhost:5173/node_modules/.vite/deps/pinia.js?v=eff7922a:206
-[    4535ms] [LOG] 🍍 "core-timezone" store installed 🆕 @ http://localhost:5173/node_modules/.vite/deps/pinia.js?v=eff7922a:206
-[    4537ms] [LOG] 🍍 "core-tabbar" store installed 🆕 @ http://localhost:5173/node_modules/.vite/deps/pinia.js?v=eff7922a:206
-[    4909ms] [INFO] This page uses Chrome's Built-In AI features (LanguageDetector)! We're always improving our models; please submit your feedback here: https://issues.chromium.org/issues/new?component=1583316 @ chrome-extension://bpoadfkcbjbfhfodiogcnhhhpibjhbnh/content_script.js:4890
-[   15635ms] [WARNING] [vxe table v4.17.48] 参数 "[toolbar] refresh={...}" 已废弃，请使用 "refresh=boolean & refresh-options={...}" @ http://localhost:5173/node_modules/.vite/deps/chunk-ZTR45YP4.js?v=eff7922a:5837
-[   15635ms] [WARNING] [vxe table v4.17.48] 参数 "[toolbar] zoom={...}" 已废弃，请使用 "zoom=boolean & zoom-options={...}" @ http://localhost:5173/node_modules/.vite/deps/chunk-ZTR45YP4.js?v=eff7922a:5837
