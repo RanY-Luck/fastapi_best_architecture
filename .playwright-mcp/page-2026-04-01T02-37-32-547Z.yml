@@ -1,0 +1,10 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e8]:
+    - img [ref=e9]
+    - generic [ref=e46]:
+      - paragraph [ref=e47]: 哎呀！未找到页面
+      - paragraph [ref=e48]: 抱歉，我们无法找到您要找的页面。
+      - button "返回首页" [ref=e49] [cursor=pointer]:
+        - img [ref=e50]
+        - text: 返回首页
+  - generic [ref=e5]: 原文

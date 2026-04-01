@@ -1,0 +1,135 @@
+[    4370ms] [INFO] This page uses Chrome's Built-In AI features (LanguageDetector)! We're always improving our models; please submit your feedback here: https://issues.chromium.org/issues/new?component=1583316 @ chrome-extension://bpoadfkcbjbfhfodiogcnhhhpibjhbnh/content_script.js:4890
+[    4760ms] [LOG] 🍍 "websocket" store installed 🆕 @ http://localhost:5173/node_modules/.vite/deps/pinia.js?v=eff7922a:206
+[    5684ms] [LOG] 🍍 "core-timezone" store installed 🆕 @ http://localhost:5173/node_modules/.vite/deps/pinia.js?v=eff7922a:206
+[    5685ms] [LOG] 🍍 "core-tabbar" store installed 🆕 @ http://localhost:5173/node_modules/.vite/deps/pinia.js?v=eff7922a:206
+[   36198ms] fetchError: Request timeout after 30000ms
+    at CT (chrome-extension://bpoadfkcbjbfhfodiogcnhhhpibjhbnh/content_script.js:4891:12015)
+    at e.sendFrom (chrome-extension://bpoadfkcbjbfhfodiogcnhhhpibjhbnh/content_script.js:4891:2977)
+    at async f3.sendWithHealth (chrome-extension://bpoadfkcbjbfhfodiogcnhhhpibjhbnh/content_script.js:4891:16516)
+    at async EV (chrome-extension://bpoadfkcbjbfhfodiogcnhhhpibjhbnh/content_script.js:4891:22033)
+    at async he (chrome-extension://bpoadfkcbjbfhfodiogcnhhhpibjhbnh/content_script.js:4891:20203)
+    at async RH (chrome-extension://bpoadfkcbjbfhfodiogcnhhhpibjhbnh/content_script.js:4884:25758)
+    at async LH (chrome-extension://bpoadfkcbjbfhfodiogcnhhhpibjhbnh/content_script.js:4884:25380)
+[  136672ms] [INFO] This page uses Chrome's Built-In AI features (LanguageDetector)! We're always improving our models; please submit your feedback here: https://issues.chromium.org/issues/new?component=1583316 @ chrome-extension://bpoadfkcbjbfhfodiogcnhhhpibjhbnh/content_script.js:4890
+[  137119ms] [LOG] 🍍 "websocket" store installed 🆕 @ http://localhost:5173/node_modules/.vite/deps/pinia.js?v=eff7922a:206
+[  137997ms] [LOG] 🍍 "core-timezone" store installed 🆕 @ http://localhost:5173/node_modules/.vite/deps/pinia.js?v=eff7922a:206
+[  137999ms] [LOG] 🍍 "core-tabbar" store installed 🆕 @ http://localhost:5173/node_modules/.vite/deps/pinia.js?v=eff7922a:206
+[  153200ms] [WARNING] [vxe table v4.17.48] 参数 "[toolbar] refresh={...}" 已废弃，请使用 "refresh=boolean & refresh-options={...}" @ http://localhost:5173/node_modules/.vite/deps/chunk-ZTR45YP4.js?v=eff7922a:5837
+[  153201ms] [WARNING] [vxe table v4.17.48] 参数 "[toolbar] zoom={...}" 已废弃，请使用 "zoom=boolean & zoom-options={...}" @ http://localhost:5173/node_modules/.vite/deps/chunk-ZTR45YP4.js?v=eff7922a:5837
+[  156144ms] [WARNING] [Vue warn]: Failed to resolve component: a-descriptions-item
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <BatchReportDrawer > 
+  at <VbenParentDrawer> 
+  at <Page auto-content-height="" > 
+  at <ApiTestingBatchReport > 
+  at <ApiTestingBatchReport onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< null > key="/plugins/batch-report?project_id=1&report_id=11&suite_id=1&target_type=suite" > 
+  at <KeepAlive key=0 exclude= [] include= [ApiTesting, ApiTestingTestReportDetail, ApiTestingTestSuite, ApiTestingBatchReport] > 
+  at <BaseTransition mode="out-in" appear=true persisted=false  ... > 
+  at <Transition key=0 name="fade-slide" appear=""  ... > 
+  at <RouterView> 
+  at <LayoutContent> 
+  at <LayoutContent id="__vben_main_content" content-compact="wide" content-compact-width=1200  ... > 
+  at <VbenLayout sidebar-extra-visible=true onUpdate:sidebarExtraVisible=fn content-compact="wide"  ... > 
+  at <BasicLayout onClearPreferencesAndLogout=fn<handleLogout> > 
+  at <Basic onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< Proxy(Object) > > 
+  at <RouterView> 
+  at <Anonymous message= {} notification= {} > 
+  at <AApp> 
+  at <LocaleProvider locale= {locale: zh-cn, Pagination: Object, DatePicker: Object, TimePicker: Object, Calendar: Object} _ANT_MARK__="internalMark" > 
+  at <Anonymous prefixCls="anticon" csp=undefined layer=undefined > 
+  at <Anonymous value= {override: Object, hashed: false, theme: Theme, token: Object, components: Object} > 
+  at <Anonymous parentContext= {getPrefixCls: , iconPrefixCls: anticon} locale= {locale: zh-cn, Pagination: Object, DatePicker: Object, TimePicker: Object, Calendar: Object} theme= {algorithm: Array(1), token: Proxy(Object)}  ... > 
+  at <AConfigProvider locale= {locale: zh-cn, Pagination: Object, DatePicker: Object, TimePicker: Object, Calendar: Object} theme= {algorithm: Array(1), token: Proxy(Object)} > 
+  at <App> @ http://localhost:5173/node_modules/.vite/deps/chunk-NUZEDWKZ.js?v=eff7922a:1936
+[  156319ms] [WARNING] [vxe table v4.17.48] 参数 "[toolbar] refresh={...}" 已废弃，请使用 "refresh=boolean & refresh-options={...}" @ http://localhost:5173/node_modules/.vite/deps/chunk-ZTR45YP4.js?v=eff7922a:5837
+[  156319ms] [WARNING] [vxe table v4.17.48] 参数 "[toolbar] zoom={...}" 已废弃，请使用 "zoom=boolean & zoom-options={...}" @ http://localhost:5173/node_modules/.vite/deps/chunk-ZTR45YP4.js?v=eff7922a:5837
+[  156711ms] [WARNING] [Vue warn]: Failed to resolve component: a-descriptions-item
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <BatchReportDrawer > 
+  at <VbenParentDrawer> 
+  at <Page auto-content-height="" > 
+  at <ApiTestingBatchReport > 
+  at <ApiTestingBatchReport onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< Proxy(Object) > key="/plugins/batch-report?project_id=1&report_id=11&suite_id=1&target_type=suite" > 
+  at <KeepAlive key=0 exclude= [] include= [ApiTesting, ApiTestingTestReportDetail, ApiTestingTestSuite, ApiTestingBatchReport] > 
+  at <BaseTransition mode="out-in" appear=true persisted=false  ... > 
+  at <Transition key=0 name="fade-slide" appear=""  ... > 
+  at <RouterView> 
+  at <LayoutContent> 
+  at <LayoutContent id="__vben_main_content" content-compact="wide" content-compact-width=1200  ... > 
+  at <VbenLayout sidebar-extra-visible=true onUpdate:sidebarExtraVisible=fn content-compact="wide"  ... > 
+  at <BasicLayout onClearPreferencesAndLogout=fn<handleLogout> > 
+  at <Basic onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< Proxy(Object) > > 
+  at <RouterView> 
+  at <Anonymous message= {} notification= {} > 
+  at <AApp> 
+  at <LocaleProvider locale= {locale: zh-cn, Pagination: Object, DatePicker: Object, TimePicker: Object, Calendar: Object} _ANT_MARK__="internalMark" > 
+  at <Anonymous prefixCls="anticon" csp=undefined layer=undefined > 
+  at <Anonymous value= {override: Object, hashed: false, theme: Theme, token: Object, components: Object} > 
+  at <Anonymous parentContext= {getPrefixCls: , iconPrefixCls: anticon} locale= {locale: zh-cn, Pagination: Object, DatePicker: Object, TimePicker: Object, Calendar: Object} theme= {algorithm: Array(1), token: Proxy(Object)}  ... > 
+  at <AConfigProvider locale= {locale: zh-cn, Pagination: Object, DatePicker: Object, TimePicker: Object, Calendar: Object} theme= {algorithm: Array(1), token: Proxy(Object)} > 
+  at <App> @ http://localhost:5173/node_modules/.vite/deps/chunk-NUZEDWKZ.js?v=eff7922a:1936
+[  168528ms] fetchError: Request timeout after 30000ms
+    at CT (chrome-extension://bpoadfkcbjbfhfodiogcnhhhpibjhbnh/content_script.js:4891:12015)
+    at e.sendFrom (chrome-extension://bpoadfkcbjbfhfodiogcnhhhpibjhbnh/content_script.js:4891:2977)
+    at async f3.sendWithHealth (chrome-extension://bpoadfkcbjbfhfodiogcnhhhpibjhbnh/content_script.js:4891:16516)
+    at async EV (chrome-extension://bpoadfkcbjbfhfodiogcnhhhpibjhbnh/content_script.js:4891:22033)
+    at async he (chrome-extension://bpoadfkcbjbfhfodiogcnhhhpibjhbnh/content_script.js:4891:20203)
+    at async RH (chrome-extension://bpoadfkcbjbfhfodiogcnhhhpibjhbnh/content_script.js:4884:25758)
+    at async LH (chrome-extension://bpoadfkcbjbfhfodiogcnhhhpibjhbnh/content_script.js:4884:25380)
+[  280938ms] [WARNING] [Vue warn]: Failed to resolve component: a-descriptions-item
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <BatchReportDrawer > 
+  at <VbenParentDrawer> 
+  at <Page auto-content-height="" > 
+  at <ApiTestingBatchReport > 
+  at <ApiTestingBatchReport onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< Proxy(Object) > key="/plugins/batch-report?project_id=1&report_id=11&suite_id=1&target_type=suite" > 
+  at <KeepAlive key=0 exclude= [] include= [ApiTesting, ApiTestingTestReportDetail, ApiTestingTestSuite, ApiTestingBatchReport] > 
+  at <BaseTransition mode="out-in" appear=true persisted=false  ... > 
+  at <Transition key=0 name="fade-slide" appear=""  ... > 
+  at <RouterView> 
+  at <LayoutContent> 
+  at <LayoutContent id="__vben_main_content" content-compact="wide" content-compact-width=1200  ... > 
+  at <VbenLayout sidebar-extra-visible=true onUpdate:sidebarExtraVisible=fn content-compact="wide"  ... > 
+  at <BasicLayout onClearPreferencesAndLogout=fn<handleLogout> > 
+  at <Basic onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< Proxy(Object) > > 
+  at <RouterView> 
+  at <Anonymous message= {} notification= {} > 
+  at <AApp> 
+  at <LocaleProvider locale= {locale: zh-cn, Pagination: Object, DatePicker: Object, TimePicker: Object, Calendar: Object} _ANT_MARK__="internalMark" > 
+  at <Anonymous prefixCls="anticon" csp=undefined layer=undefined > 
+  at <Anonymous value= {override: Object, hashed: false, theme: Theme, token: Object, components: Object} > 
+  at <Anonymous parentContext= {getPrefixCls: , iconPrefixCls: anticon} locale= {locale: zh-cn, Pagination: Object, DatePicker: Object, TimePicker: Object, Calendar: Object} theme= {algorithm: Array(1), token: Proxy(Object)}  ... > 
+  at <AConfigProvider locale= {locale: zh-cn, Pagination: Object, DatePicker: Object, TimePicker: Object, Calendar: Object} theme= {algorithm: Array(1), token: Proxy(Object)} > 
+  at <App> @ http://localhost:5173/node_modules/.vite/deps/chunk-NUZEDWKZ.js?v=eff7922a:1936
+[  281262ms] [WARNING] [Vue warn]: Failed to resolve component: a-descriptions-item
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <BatchReportDrawer > 
+  at <VbenParentDrawer> 
+  at <Page auto-content-height="" > 
+  at <ApiTestingBatchReport > 
+  at <ApiTestingBatchReport onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< Proxy(Object) > key="/plugins/batch-report?project_id=1&report_id=11&suite_id=1&target_type=suite" > 
+  at <KeepAlive key=0 exclude= [] include= [ApiTesting, ApiTestingTestReportDetail, ApiTestingTestSuite, ApiTestingBatchReport] > 
+  at <BaseTransition mode="out-in" appear=true persisted=false  ... > 
+  at <Transition key=0 name="fade-slide" appear=""  ... > 
+  at <RouterView> 
+  at <LayoutContent> 
+  at <LayoutContent id="__vben_main_content" content-compact="wide" content-compact-width=1200  ... > 
+  at <VbenLayout sidebar-extra-visible=true onUpdate:sidebarExtraVisible=fn content-compact="wide"  ... > 
+  at <BasicLayout onClearPreferencesAndLogout=fn<handleLogout> > 
+  at <Basic onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< Proxy(Object) > > 
+  at <RouterView> 
+  at <Anonymous message= {} notification= {} > 
+  at <AApp> 
+  at <LocaleProvider locale= {locale: zh-cn, Pagination: Object, DatePicker: Object, TimePicker: Object, Calendar: Object} _ANT_MARK__="internalMark" > 
+  at <Anonymous prefixCls="anticon" csp=undefined layer=undefined > 
+  at <Anonymous value= {override: Object, hashed: false, theme: Theme, token: Object, components: Object} > 
+  at <Anonymous parentContext= {getPrefixCls: , iconPrefixCls: anticon} locale= {locale: zh-cn, Pagination: Object, DatePicker: Object, TimePicker: Object, Calendar: Object} theme= {algorithm: Array(1), token: Proxy(Object)}  ... > 
+  at <AConfigProvider locale= {locale: zh-cn, Pagination: Object, DatePicker: Object, TimePicker: Object, Calendar: Object} theme= {algorithm: Array(1), token: Proxy(Object)} > 
+  at <App> @ http://localhost:5173/node_modules/.vite/deps/chunk-NUZEDWKZ.js?v=eff7922a:1936
+[  707321ms] A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+[ 1542397ms] [WARNING] [vxe table v4.17.48] 参数 "[toolbar] refresh={...}" 已废弃，请使用 "refresh=boolean & refresh-options={...}" @ http://localhost:5173/node_modules/.vite/deps/chunk-ZTR45YP4.js?v=eff7922a:5837
+[ 1542398ms] [WARNING] [vxe table v4.17.48] 参数 "[toolbar] zoom={...}" 已废弃，请使用 "zoom=boolean & zoom-options={...}" @ http://localhost:5173/node_modules/.vite/deps/chunk-ZTR45YP4.js?v=eff7922a:5837
+[ 1550704ms] [LOG] 🍍 "websocket" store installed 🆕 @ http://localhost:5173/node_modules/.vite/deps/pinia.js?v=eff7922a:206
+[ 1553029ms] [LOG] 🍍 "core-timezone" store installed 🆕 @ http://localhost:5173/node_modules/.vite/deps/pinia.js?v=eff7922a:206
+[ 1553031ms] [LOG] 🍍 "core-tabbar" store installed 🆕 @ http://localhost:5173/node_modules/.vite/deps/pinia.js?v=eff7922a:206
+[ 1554494ms] [INFO] This page uses Chrome's Built-In AI features (LanguageDetector)! We're always improving our models; please submit your feedback here: https://issues.chromium.org/issues/new?component=1583316 @ chrome-extension://bpoadfkcbjbfhfodiogcnhhhpibjhbnh/content_script.js:4890

@@ -1,0 +1,219 @@
+- generic [ref=e1]:
+  - generic [ref=e14]:
+    - complementary [ref=e15]:
+      - img [ref=e17] [cursor=pointer]
+      - link "FBA UI FBA UI" [ref=e21] [cursor=pointer]:
+        - /url: javascript:void 0
+        - img "FBA UI" [ref=e24]
+        - generic [ref=e25]: FBA UI
+      - menu [ref=e28]:
+        - listitem [ref=e29]:
+          - generic [ref=e30] [cursor=pointer]:
+            - img [ref=e31]
+            - generic [ref=e33]: 概览
+            - img [ref=e34]
+        - listitem [ref=e36]:
+          - generic [ref=e37] [cursor=pointer]:
+            - img [ref=e38]
+            - generic [ref=e40]: 系统管理
+            - img [ref=e41]
+        - listitem [ref=e43]:
+          - generic [ref=e44] [cursor=pointer]:
+            - img [ref=e45]
+            - generic [ref=e47]: 任务调度
+            - img [ref=e48]
+        - listitem [ref=e50]:
+          - generic [ref=e51] [cursor=pointer]:
+            - img [ref=e52]
+            - generic [ref=e55]: 日志管理
+            - img [ref=e56]
+        - listitem [ref=e58]:
+          - generic [ref=e59] [cursor=pointer]:
+            - img [ref=e60]
+            - generic [ref=e62]: 系统监控
+            - img [ref=e63]
+        - listitem [ref=e65]:
+          - generic [ref=e66] [cursor=pointer]:
+            - img [ref=e67]
+            - generic [ref=e68]: 项目
+            - img [ref=e69]
+        - menuitem "代码生成" [ref=e71] [cursor=pointer]:
+          - generic [ref=e72]:
+            - img [ref=e73]
+            - generic [ref=e75]: 代码生成
+        - listitem [ref=e76]:
+          - generic [ref=e77] [cursor=pointer]:
+            - img [ref=e78]
+            - generic [ref=e79]: 接口自动化
+            - img [ref=e80]
+          - list [ref=e82]:
+            - menuitem "接口概括" [ref=e83] [cursor=pointer]:
+              - generic [ref=e85]: 接口概括
+            - menuitem "项目管理" [ref=e86] [cursor=pointer]:
+              - generic [ref=e88]: 项目管理
+            - menuitem "用例管理" [ref=e89] [cursor=pointer]:
+              - generic [ref=e91]: 用例管理
+            - menuitem "测试步骤" [ref=e92] [cursor=pointer]:
+              - generic [ref=e94]: 测试步骤
+            - menuitem "测试报告" [ref=e95] [cursor=pointer]:
+              - generic [ref=e97]: 测试报告
+            - menuitem "环境管理" [ref=e98] [cursor=pointer]:
+              - generic [ref=e100]: 环境管理
+            - menuitem "变量管理" [ref=e101] [cursor=pointer]:
+              - generic [ref=e103]: 变量管理
+            - menuitem "测试集合" [ref=e104] [cursor=pointer]:
+              - generic [ref=e106]: 测试集合
+            - menuitem "批量测试报告" [ref=e107] [cursor=pointer]:
+              - generic [ref=e109]: 批量测试报告
+      - img [ref=e112] [cursor=pointer]
+    - generic [ref=e115]:
+      - generic [ref=e116]:
+        - banner [ref=e117]:
+          - button [ref=e118] [cursor=pointer]:
+            - img [ref=e119]
+          - button [ref=e121] [cursor=pointer]:
+            - img [ref=e122]
+          - navigation "breadcrumb" [ref=e126]:
+            - list [ref=e127]:
+              - listitem [ref=e128]:
+                - link "接口自动化" [ref=e129] [cursor=pointer]:
+                  - /url: javascript:void 0
+                  - generic [ref=e130]: 接口自动化
+                - listitem [ref=e131]:
+                  - img [ref=e132]
+              - listitem [ref=e429]:
+                - link "运行日志" [disabled] [ref=e430]:
+                  - generic [ref=e431]: 运行日志
+          - generic [ref=e138]:
+            - generic [ref=e140] [cursor=pointer]:
+              - img [ref=e141]
+              - generic [ref=e144]: 搜索
+              - generic [ref=e145]: Ctrl K
+            - button [ref=e148] [cursor=pointer]:
+              - img [ref=e149]
+            - button "dark" [ref=e153] [cursor=pointer]:
+              - img [ref=e154]
+            - button [ref=e162] [cursor=pointer]:
+              - img [ref=e163]
+            - button [ref=e168] [cursor=pointer]:
+              - img [ref=e169]
+            - button [ref=e171] [cursor=pointer]:
+              - img [ref=e172]
+            - button [ref=e177] [cursor=pointer]:
+              - button [ref=e179]:
+                - img [ref=e181]
+            - button [ref=e184] [cursor=pointer]:
+              - img [ref=e189]
+        - generic [ref=e191]:
+          - generic [ref=e196]:
+            - generic [ref=e198] [cursor=pointer]:
+              - generic [ref=e199]:
+                - img [ref=e201]
+                - img [ref=e203]
+              - img [ref=e206]
+              - generic [ref=e210]: 测试报告详情
+            - generic [ref=e433] [cursor=pointer]:
+              - generic [ref=e435]:
+                - img [ref=e437]
+                - img [ref=e439]
+              - img [ref=e442]
+              - generic [ref=e446]: 接口概括
+            - generic [ref=e448] [cursor=pointer]:
+              - generic [ref=e450]:
+                - img [ref=e452]
+                - img [ref=e454]
+              - img [ref=e457]
+              - generic [ref=e461]: 变量管理
+            - generic [ref=e463] [cursor=pointer]:
+              - generic [ref=e465]:
+                - img [ref=e467]
+                - img [ref=e469]
+              - img [ref=e472]
+              - generic [ref=e476]: 批量测试报告
+            - generic [ref=e478] [cursor=pointer]:
+              - generic [ref=e480]:
+                - img [ref=e482]
+                - img [ref=e484]
+              - img [ref=e487]
+              - generic [ref=e491]: 用例管理
+            - generic [ref=e493] [cursor=pointer]:
+              - generic [ref=e494]:
+                - img [ref=e496]
+                - img [ref=e498]
+              - img [ref=e501]
+              - generic [ref=e505]: 运行日志
+          - generic [ref=e330]:
+            - button [ref=e331] [cursor=pointer]:
+              - img [ref=e333]
+            - img [ref=e339] [cursor=pointer]
+            - img [ref=e343] [cursor=pointer]
+      - main [ref=e349]:
+        - generic [ref=e508]:
+          - generic [ref=e510]:
+            - generic [ref=e511]:
+              - heading "运行日志" [level=1] [ref=e512]
+              - paragraph [ref=e513]: 状态：执行失败 · 总步骤：1 · 成功： 0 · 失败：1
+            - button "查看报告" [ref=e514] [cursor=pointer]
+          - generic [ref=e516]:
+            - article [ref=e517]:
+              - generic [ref=e519]:
+                - strong [ref=e520]: 开始执行
+                - paragraph [ref=e521]: 共 1 个步骤
+              - button "查看原始事件" [ref=e523] [cursor=pointer]
+            - article [ref=e524]:
+              - generic [ref=e525]:
+                - generic [ref=e526]:
+                  - strong [ref=e527]: 开始步骤
+                  - paragraph [ref=e528]: 用户登录测试
+                - generic [ref=e529]: 用户登录测试
+              - paragraph [ref=e530]: 步骤开始执行
+              - button "查看原始事件" [ref=e532] [cursor=pointer]
+            - article [ref=e533]:
+              - generic [ref=e534]:
+                - generic [ref=e535]:
+                  - strong [ref=e536]: 发送请求
+                  - paragraph [ref=e537]: 用户登录测试
+                - generic [ref=e538]: 用户登录测试
+              - button "查看原始事件" [ref=e540] [cursor=pointer]
+            - article [ref=e541]:
+              - generic [ref=e542]:
+                - generic [ref=e543]:
+                  - strong [ref=e544]: 收到响应
+                  - paragraph [ref=e545]: 请求完成
+                - generic [ref=e546]: 用户登录测试
+              - paragraph [ref=e547]: 请求完成
+              - generic [ref=e548]:
+                - button "收起原始事件" [ref=e549] [cursor=pointer]
+                - generic [ref=e550]:
+                  - generic [ref=e551]: 原始事件
+                  - generic [ref=e552]: "{ \"type\": \"step_response\", \"timestamp\": \"2026-04-01T10:48:44.093590\", \"case_id\": 1, \"environment_id\": null, \"step_order\": 1, \"step_name\": \"用户登录测试\", \"status_code\": 422, \"elapsed_time\": 28.00583839416504, \"success\": true, \"message\": \"请求完成\" }"
+            - article [ref=e553]:
+              - generic [ref=e554]:
+                - generic [ref=e555]:
+                  - strong [ref=e556]: 断言失败
+                  - paragraph [ref=e557]: "验证状态码为200: 期望值: 200, 实际值: 422"
+                - generic [ref=e558]: 用户登录测试
+              - paragraph [ref=e559]: "验证状态码为200: 期望值: 200, 实际值: 422"
+              - button "查看原始事件" [active] [ref=e561] [cursor=pointer]
+            - article [ref=e562]:
+              - generic [ref=e563]:
+                - generic [ref=e564]:
+                  - strong [ref=e565]: SQL 校验失败
+                  - paragraph [ref=e566]: "期望值: , 实际值: {'id': 1, 'name': '测试', 'sort': 0, 'leader': None, 'phone': None, 'email': None, 'status': 1, 'del_flag': 0, 'parent_id': None, 'created_time': datetime.datetime(2025, 11, 13, 9, 29, 21), 'updated_time': None}"
+                - generic [ref=e567]: 用户登录测试
+              - paragraph [ref=e568]: "期望值: , 实际值: {'id': 1, 'name': '测试', 'sort': 0, 'leader': None, 'phone': None, 'email': None, 'status': 1, 'del_flag': 0, 'parent_id': None, 'created_time': datetime.datetime(2025, 11, 13, 9, 29, 21), 'updated_time': None}"
+              - button "查看原始事件" [ref=e570] [cursor=pointer]
+            - article [ref=e571]:
+              - generic [ref=e572]:
+                - generic [ref=e573]:
+                  - strong [ref=e574]: 步骤失败
+                  - paragraph [ref=e575]: 用户登录测试 · 耗时 49ms
+                - generic [ref=e576]: 用户登录测试
+              - paragraph [ref=e577]: 步骤执行失败
+              - button "查看原始事件" [ref=e579] [cursor=pointer]
+            - article [ref=e580]:
+              - generic [ref=e582]:
+                - strong [ref=e583]: 执行结束
+                - paragraph [ref=e584]: "已生成报告 #63"
+              - button "查看原始事件" [ref=e586] [cursor=pointer]
+  - generic [ref=e5]: 原文

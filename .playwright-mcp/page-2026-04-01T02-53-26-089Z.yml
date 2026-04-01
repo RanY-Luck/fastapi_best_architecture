@@ -1,0 +1,274 @@
+- generic [ref=e1]:
+  - generic [ref=e14]:
+    - complementary [ref=e15]:
+      - img [ref=e17] [cursor=pointer]
+      - link "FBA UI FBA UI" [ref=e21] [cursor=pointer]:
+        - /url: javascript:void 0
+        - img "FBA UI" [ref=e24]
+        - generic [ref=e25]: FBA UI
+      - menu [ref=e28]:
+        - listitem [ref=e29]:
+          - generic [ref=e30] [cursor=pointer]:
+            - img [ref=e31]
+            - generic [ref=e33]: 概览
+            - img [ref=e34]
+        - listitem [ref=e36]:
+          - generic [ref=e37] [cursor=pointer]:
+            - img [ref=e38]
+            - generic [ref=e40]: 系统管理
+            - img [ref=e41]
+        - listitem [ref=e43]:
+          - generic [ref=e44] [cursor=pointer]:
+            - img [ref=e45]
+            - generic [ref=e47]: 任务调度
+            - img [ref=e48]
+        - listitem [ref=e50]:
+          - generic [ref=e51] [cursor=pointer]:
+            - img [ref=e52]
+            - generic [ref=e55]: 日志管理
+            - img [ref=e56]
+        - listitem [ref=e58]:
+          - generic [ref=e59] [cursor=pointer]:
+            - img [ref=e60]
+            - generic [ref=e62]: 系统监控
+            - img [ref=e63]
+        - listitem [ref=e65]:
+          - generic [ref=e66] [cursor=pointer]:
+            - img [ref=e67]
+            - generic [ref=e68]: 项目
+            - img [ref=e69]
+        - menuitem "代码生成" [ref=e71] [cursor=pointer]:
+          - generic [ref=e72]:
+            - img [ref=e73]
+            - generic [ref=e75]: 代码生成
+        - listitem [ref=e76]:
+          - generic [ref=e77] [cursor=pointer]:
+            - img [ref=e78]
+            - generic [ref=e79]: 接口自动化
+            - img [ref=e80]
+          - list [ref=e82]:
+            - menuitem "接口概括" [ref=e83] [cursor=pointer]:
+              - generic [ref=e85]: 接口概括
+            - menuitem "项目管理" [ref=e86] [cursor=pointer]:
+              - generic [ref=e88]: 项目管理
+            - menuitem "用例管理" [ref=e89] [cursor=pointer]:
+              - generic [ref=e91]: 用例管理
+            - menuitem "测试步骤" [ref=e92] [cursor=pointer]:
+              - generic [ref=e94]: 测试步骤
+            - menuitem "测试报告" [ref=e95] [cursor=pointer]:
+              - generic [ref=e97]: 测试报告
+            - menuitem "环境管理" [ref=e98] [cursor=pointer]:
+              - generic [ref=e100]: 环境管理
+            - menuitem "变量管理" [ref=e101] [cursor=pointer]:
+              - generic [ref=e103]: 变量管理
+            - menuitem "测试集合" [ref=e104] [cursor=pointer]:
+              - generic [ref=e106]: 测试集合
+            - menuitem "批量测试报告" [ref=e107] [cursor=pointer]:
+              - generic [ref=e109]: 批量测试报告
+      - img [ref=e112] [cursor=pointer]
+    - generic [ref=e115]:
+      - generic [ref=e116]:
+        - banner [ref=e117]:
+          - button [ref=e118] [cursor=pointer]:
+            - img [ref=e119]
+          - button [ref=e121] [cursor=pointer]:
+            - img [ref=e122]
+          - navigation "breadcrumb" [ref=e126]:
+            - list [ref=e127]:
+              - listitem [ref=e128]:
+                - link "接口自动化" [ref=e129] [cursor=pointer]:
+                  - /url: javascript:void 0
+                  - generic [ref=e130]: 接口自动化
+                - listitem [ref=e131]:
+                  - img [ref=e132]
+              - listitem [ref=e587]:
+                - link "用例管理" [disabled] [ref=e588]:
+                  - generic [ref=e589]: 用例管理
+          - generic [ref=e138]:
+            - generic [ref=e140] [cursor=pointer]:
+              - img [ref=e141]
+              - generic [ref=e144]: 搜索
+              - generic [ref=e145]: Ctrl K
+            - button [ref=e148] [cursor=pointer]:
+              - img [ref=e149]
+            - button "dark" [ref=e153] [cursor=pointer]:
+              - img [ref=e154]
+            - button [ref=e162] [cursor=pointer]:
+              - img [ref=e163]
+            - button [ref=e168] [cursor=pointer]:
+              - img [ref=e169]
+            - button [ref=e171] [cursor=pointer]:
+              - img [ref=e172]
+            - button [ref=e177] [cursor=pointer]:
+              - button [ref=e179]:
+                - img [ref=e181]
+            - button [ref=e184] [cursor=pointer]:
+              - img [ref=e189]
+        - generic [ref=e191]:
+          - generic [ref=e196]:
+            - generic [ref=e198] [cursor=pointer]:
+              - generic [ref=e199]:
+                - img [ref=e201]
+                - img [ref=e203]
+              - img [ref=e206]
+              - generic [ref=e210]: 测试报告详情
+            - generic [ref=e433] [cursor=pointer]:
+              - generic [ref=e435]:
+                - img [ref=e437]
+                - img [ref=e439]
+              - img [ref=e442]
+              - generic [ref=e446]: 接口概括
+            - generic [ref=e448] [cursor=pointer]:
+              - generic [ref=e450]:
+                - img [ref=e452]
+                - img [ref=e454]
+              - img [ref=e457]
+              - generic [ref=e461]: 变量管理
+            - generic [ref=e463] [cursor=pointer]:
+              - generic [ref=e465]:
+                - img [ref=e467]
+                - img [ref=e469]
+              - img [ref=e472]
+              - generic [ref=e476]: 批量测试报告
+            - generic [ref=e478] [cursor=pointer]:
+              - generic [ref=e480]:
+                - img [ref=e482]
+                - img [ref=e484]
+              - img [ref=e487]
+              - generic [ref=e491]: 用例管理
+            - generic [ref=e493] [cursor=pointer]:
+              - generic [ref=e494]:
+                - img [ref=e496]
+                - img [ref=e498]
+              - img [ref=e501]
+              - generic [ref=e505]: 运行日志
+          - generic [ref=e330]:
+            - button [ref=e331] [cursor=pointer]:
+              - img [ref=e333]
+            - img [ref=e339] [cursor=pointer]
+            - img [ref=e343] [cursor=pointer]
+      - main [ref=e349]:
+        - generic [ref=e594]:
+          - generic [ref=e599]:
+            - generic [ref=e600]:
+              - generic [ref=e601]: 用例名称
+              - textbox "用例名称" [ref=e604]:
+                - /placeholder: 请输入用例名称
+            - generic [ref=e605]:
+              - generic [ref=e606]: 所属项目
+              - generic [ref=e609] [cursor=pointer]:
+                - generic [ref=e610]:
+                  - generic: 请选择项目
+                  - combobox "所属项目" [ref=e611]
+                - img "down" [ref=e613]:
+                  - img [ref=e614]
+            - generic [ref=e616]:
+              - generic [ref=e617]: 状态
+              - generic [ref=e620] [cursor=pointer]:
+                - generic [ref=e621]:
+                  - generic: 请选择状态
+                  - combobox "状态" [ref=e622]
+                - img "down" [ref=e624]:
+                  - img [ref=e625]
+            - generic [ref=e627]:
+              - button "重 置" [ref=e628] [cursor=pointer]:
+                - generic [ref=e629]: 重 置
+              - button "查 询" [ref=e630] [cursor=pointer]:
+                - generic [ref=e631]: 查 询
+              - generic [ref=e632] [cursor=pointer]:
+                - generic [ref=e633]: 收起
+                - img [ref=e635]
+          - generic [ref=e639]:
+            - generic [ref=e641]:
+              - generic [ref=e643]:
+                - button "创建测试用例" [ref=e644] [cursor=pointer]:
+                  - img [ref=e645]
+                  - text: 创建测试用例
+                - button "测试集合" [ref=e647] [cursor=pointer]
+              - generic [ref=e648]:
+                - button "" [ref=e649] [cursor=pointer]:
+                  - generic [ref=e650]: 
+                - button "" [ref=e651] [cursor=pointer]:
+                  - generic [ref=e652]: 
+                - button "" [ref=e653] [cursor=pointer]:
+                  - generic [ref=e654]: 
+                - button "" [ref=e655] [cursor=pointer]:
+                  - generic [ref=e656]: 
+                - button "" [ref=e657] [cursor=pointer]:
+                  - generic [ref=e658]: 
+            - generic [ref=e665]:
+              - table [ref=e669]:
+                - rowgroup [ref=e680]:
+                  - row " 序号 用例名称 所属项目 描述 状态 创建时间 更新时间 操作" [ref=e681]:
+                    - columnheader "" [ref=e682]:
+                      - generic "全选/取消" [ref=e687] [cursor=pointer]:
+                        - generic [ref=e688]: 
+                    - columnheader "序号" [ref=e690]:
+                      - generic [ref=e693]: 序号
+                    - columnheader "用例名称" [ref=e695]:
+                      - generic [ref=e698]: 用例名称
+                    - columnheader "所属项目" [ref=e700]:
+                      - generic [ref=e703]: 所属项目
+                    - columnheader "描述" [ref=e705]:
+                      - generic [ref=e708]: 描述
+                    - columnheader "状态" [ref=e710]:
+                      - generic [ref=e713]: 状态
+                    - columnheader "创建时间" [ref=e715]:
+                      - generic [ref=e718]: 创建时间
+                    - columnheader "更新时间" [ref=e720]:
+                      - generic [ref=e723]: 更新时间
+                    - columnheader "操作" [ref=e725]:
+                      - generic [ref=e728]: 操作
+              - table [ref=e733]:
+                - rowgroup [ref=e744]:
+                  - row " 1 登录接口 牟一全 测试登录 正常 2025/9/5 17:18:06 2026/3/28 10:27:58 管理步骤 执行测试 编辑 删除" [ref=e745]:
+                    - cell "" [ref=e746]:
+                      - generic [ref=e750] [cursor=pointer]: 
+                    - cell "1" [ref=e751]:
+                      - generic [ref=e753]: "1"
+                    - cell "登录接口" [ref=e754]:
+                      - generic [ref=e757]: 登录接口
+                    - cell "牟一全" [ref=e758]:
+                      - generic [ref=e761]: 牟一全
+                    - cell "测试登录" [ref=e762]:
+                      - generic [ref=e765]: 测试登录
+                    - cell "正常" [ref=e766]:
+                      - generic [ref=e769]: 正常
+                    - cell "2025/9/5 17:18:06" [ref=e770]:
+                      - generic [ref=e773]: 2025/9/5 17:18:06
+                    - cell "2026/3/28 10:27:58" [ref=e774]:
+                      - generic [ref=e777]: 2026/3/28 10:27:58
+                    - cell "管理步骤 执行测试 编辑 删除" [ref=e778]:
+                      - generic [ref=e781]:
+                        - button "管理步骤" [ref=e782] [cursor=pointer]:
+                          - img [ref=e783]
+                          - generic [ref=e785]: 管理步骤
+                        - button "执行测试" [ref=e786] [cursor=pointer]:
+                          - img [ref=e787]
+                          - generic [ref=e789]: 执行测试
+                        - button "编辑" [ref=e790] [cursor=pointer]:
+                          - img [ref=e791]
+                          - generic [ref=e795]: 编辑
+                        - button "删除" [ref=e796] [cursor=pointer]:
+                          - img [ref=e797]
+                          - generic [ref=e799]: 删除
+            - generic [ref=e802]:
+              - generic [ref=e803]: 共 1 条记录
+              - generic [ref=e805] [cursor=pointer]:
+                - generic "20条/页" [ref=e806]:
+                  - textbox "请选择" [ref=e807]: 20条/页
+                - generic [ref=e810]: 
+              - button "" [ref=e811]:
+                - generic [ref=e812]: 
+              - button "" [ref=e813]:
+                - generic [ref=e814]: 
+              - button "" [ref=e815]:
+                - generic [ref=e816]: 
+              - button "1" [ref=e818] [cursor=pointer]
+              - button "" [ref=e819]:
+                - generic [ref=e820]: 
+              - button "" [ref=e821]:
+                - generic [ref=e822]: 
+              - button "" [ref=e823]:
+                - generic [ref=e824]: 
+  - generic [ref=e5]: 原文

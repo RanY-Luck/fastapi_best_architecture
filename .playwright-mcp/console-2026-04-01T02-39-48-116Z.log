@@ -1,0 +1,3 @@
+[    3120ms] [INFO] This page uses Chrome's Built-In AI features (LanguageDetector)! We're always improving our models; please submit your feedback here: https://issues.chromium.org/issues/new?component=1583316 @ chrome-extension://bpoadfkcbjbfhfodiogcnhhhpibjhbnh/content_script.js:4890
+[    3546ms] [LOG] 🍍 "websocket" store installed 🆕 @ http://localhost:5173/node_modules/.vite/deps/pinia.js?v=eff7922a:206
+[   82371ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:8000/api/v1/sys/menus/sidebar:0

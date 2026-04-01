@@ -1,0 +1,11 @@
+[    4662ms] [LOG] 🍍 "websocket" store installed 🆕 @ http://localhost:5173/node_modules/.vite/deps/pinia.js?v=eff7922a:206
+[    5246ms] [INFO] This page uses Chrome's Built-In AI features (LanguageDetector)! We're always improving our models; please submit your feedback here: https://issues.chromium.org/issues/new?component=1583316 @ chrome-extension://bpoadfkcbjbfhfodiogcnhhhpibjhbnh/content_script.js:4890
+[   14277ms] [ERROR] Immersive Translate ERROR: sync rules error:  fetchError: Failed to fetch
+    at CT (chrome-extension://bpoadfkcbjbfhfodiogcnhhhpibjhbnh/content_script.js:4891:12015)
+    at e.sendFrom (chrome-extension://bpoadfkcbjbfhfodiogcnhhhpibjhbnh/content_script.js:4891:2977)
+    at async f3.sendWithHealth (chrome-extension://bpoadfkcbjbfhfodiogcnhhhpibjhbnh/content_script.js:4891:16516)
+    at async EV (chrome-extension://bpoadfkcbjbfhfodiogcnhhhpibjhbnh/content_script.js:4891:22033)
+    at async he (chrome-extension://bpoadfkcbjbfhfodiogcnhhhpibjhbnh/content_script.js:4891:20203)
+    at async Z0 (chrome-extension://bpoadfkcbjbfhfodiogcnhhhpibjhbnh/content_script.js:5426:5688) @ chrome-extension://bpoadfkcbjbfhfodiogcnhhhpibjhbnh/content_script.js:4870
+[  193368ms] [INFO] This page uses Chrome's Built-In AI features (LanguageDetector)! We're always improving our models; please submit your feedback here: https://issues.chromium.org/issues/new?component=1583316 @ chrome-extension://bpoadfkcbjbfhfodiogcnhhhpibjhbnh/content_script.js:4890
+[  197617ms] [LOG] 🍍 "websocket" store installed 🆕 @ http://localhost:5173/node_modules/.vite/deps/pinia.js?v=eff7922a:206
